@@ -1,47 +1,53 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import { ref, onMounted, useTemplateRef } from 'vue'
+import logo from './assets/logo.svg'
+let data = []
+const list = ref({})
+const player = useTemplateRef('player')
+const selectedItem = ref(null)
+const loadData = async () => {
+  const res = await fetch('/data.json')
+  data = await res.json()
+  list.value = Object.groupBy(data, (x) => x.category)
+}
+const clickItem = (item) => {
+  selectedItem.value = item
+  player.value.src = item.url
+}
+onMounted(() => {
+  loadData()
+})
 </script>
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
+    <img class="logo" :src="logo" alt="" />
+    <p class="title">口腔HIS系统学习网站</p>
   </header>
-
+  <nav>
+    <div>
+      <section v-for="(val, key) in list" :key="key">
+        <p class="group-title">{{ key }}</p>
+        <p
+          class="link"
+          :class="{ active: selectedItem === item }"
+          @click="clickItem(item)"
+          v-for="item in val"
+          :key="item.title"
+        >
+          {{ item.title }}
+        </p>
+      </section>
+    </div>
+  </nav>
   <main>
-    <TheWelcome />
+    <video
+      ref="player"
+      controls
+      autoplay
+      src="https://d1ff4ea0-e3ef-438b-85c1-ed5a39c007d1.mdnplay.dev/shared-assets/videos/flower.mp4"
+    ></video>
   </main>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
-</style>
+<style scoped></style>
