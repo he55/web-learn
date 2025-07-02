@@ -2,16 +2,13 @@
 import { ref, onMounted, useTemplateRef, watch } from 'vue'
 import logo from './assets/logo.svg'
 
+let history = {}
 let data = []
 const list = ref({})
 const player = useTemplateRef('player')
 const selectedItem = ref(null)
 const searchText = ref('')
 
-const clickItem = (item) => {
-  selectedItem.value = item
-  player.value.src = item.url
-}
 const search = () => {
   const keywords = searchText.value
   let a = data
@@ -31,6 +28,31 @@ const search = () => {
   }
   list.value = Object.groupBy(a, (x) => x.category)
 }
+const saveHistory = (a) => {
+  history[a.md5] = player.value.currentTime
+  localStorage.setItem('history', JSON.stringify(history))
+}
+const setCurrentTime = (a) => {
+  const v = history[a.md5]
+  if (v) {
+    player.value.currentTime = v
+  }
+}
+const loadHistory = () => {
+  const a = localStorage.getItem('history')
+  if (a) {
+    history = JSON.parse(a)
+  }
+}
+const clickItem = (item) => {
+  const a = selectedItem.value
+  if (a) {
+    saveHistory(a)
+  }
+  selectedItem.value = item
+  player.value.src = item.url
+  setCurrentTime(item)
+}
 
 const loadData = async () => {
   const res = await fetch('/data.json')
@@ -41,8 +63,9 @@ const loadData = async () => {
 watch(searchText, () => {
   search()
 })
-onMounted(() => {
-  loadData()
+onMounted(async () => {
+  await loadData()
+  loadHistory()
 })
 </script>
 
