@@ -1,19 +1,46 @@
 <script setup>
-import { ref, onMounted, useTemplateRef } from 'vue'
+import { ref, onMounted, useTemplateRef, watch } from 'vue'
 import logo from './assets/logo.svg'
+
 let data = []
 const list = ref({})
 const player = useTemplateRef('player')
 const selectedItem = ref(null)
-const loadData = async () => {
-  const res = await fetch('/data.json')
-  data = await res.json()
-  list.value = Object.groupBy(data, (x) => x.category)
-}
+const searchText = ref('')
+
 const clickItem = (item) => {
   selectedItem.value = item
   player.value.src = item.url
 }
+const search = () => {
+  const keywords = searchText.value
+  let a = data
+  if (keywords) {
+    const regex = new RegExp(`(${keywords})`, 'g')
+    a = data
+      .filter((x) => x.title.includes(keywords))
+      .map((x) => {
+        x.text = x.title.replace(regex, '<em>$1</em>')
+        return x
+      })
+  } else {
+    a.map((x) => {
+      x.text = x.title
+      return x
+    })
+  }
+  list.value = Object.groupBy(a, (x) => x.category)
+}
+
+const loadData = async () => {
+  const res = await fetch('/data.json')
+  data = await res.json()
+  search()
+}
+
+watch(searchText, () => {
+  search()
+})
 onMounted(() => {
   loadData()
 })
@@ -23,6 +50,9 @@ onMounted(() => {
   <header>
     <img class="logo" :src="logo" alt="" />
     <p class="title">口腔HIS系统学习网站</p>
+    <div class="search-wrapper">
+      <input class="search" type="search" placeholder="搜索视频" v-model="searchText" />
+    </div>
   </header>
   <nav>
     <div>
@@ -34,9 +64,8 @@ onMounted(() => {
           @click="clickItem(item)"
           v-for="item in val"
           :key="item.title"
-        >
-          {{ item.title }}
-        </p>
+          v-html="item.text"
+        ></p>
       </section>
     </div>
   </nav>
@@ -49,5 +78,3 @@ onMounted(() => {
     ></video>
   </main>
 </template>
-
-<style scoped></style>

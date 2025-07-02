@@ -29,6 +29,21 @@ header {
   .title {
     font-size: 30px;
   }
+  .search-wrapper {
+    position: relative;
+    margin-left: auto;
+    margin-right: 25px;
+  }
+  .search-wrapper::before {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    content: url('./search.svg');
+  }
+  .search {
+    padding: 5px 10px 5px 30px;
+    font-size: 15px;
+  }
 }
 
 nav {
@@ -48,6 +63,12 @@ nav {
     font-weight: 500;
     color: #606266;
     cursor: pointer;
+
+    em {
+      color: red;
+      font-style: normal;
+      font-weight: bold;
+    }
   }
   .link:hover {
     color: #409eff;
