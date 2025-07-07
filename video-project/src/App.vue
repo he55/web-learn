@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted, useTemplateRef, watch } from 'vue'
-import logo from './assets/logo.svg'
 
 let history = {}
 let data = []
@@ -50,12 +49,12 @@ const clickItem = (item) => {
     saveHistory(a)
   }
   selectedItem.value = item
-  player.value.src = item.url
+  player.value.src = import.meta.env.BASE_URL + '/videos/' + item.url
   setCurrentTime(item)
 }
 
 const loadData = async () => {
-  const res = await fetch('/data.json')
+  const res = await fetch(import.meta.env.BASE_URL + '/videos/data.json')
   data = await res.json()
   search()
 }
@@ -71,8 +70,8 @@ onMounted(async () => {
 
 <template>
   <header>
-    <img class="logo" :src="logo" alt="" />
-    <p class="title">口腔HIS系统学习网站</p>
+    <img class="logo" src="./assets/logo.png" />
+    <p class="title">HIS系统学习</p>
     <div class="search-wrapper">
       <input class="search" type="search" placeholder="搜索视频" v-model="searchText" />
     </div>
@@ -93,11 +92,6 @@ onMounted(async () => {
     </div>
   </nav>
   <main>
-    <video
-      ref="player"
-      controls
-      autoplay
-      src="https://d1ff4ea0-e3ef-438b-85c1-ed5a39c007d1.mdnplay.dev/shared-assets/videos/flower.mp4"
-    ></video>
+    <video ref="player" controls autoplay></video>
   </main>
 </template>
