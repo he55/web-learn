@@ -19,6 +19,7 @@ onMounted(() => {
 
 <template>
   <div class="container">
+    <nav><div>123</div></nav>
     <header>
       <p>
         <strong>姓名：</strong>{{ doc.patient_name }} &nbsp;&nbsp;&nbsp;&nbsp;
@@ -33,26 +34,38 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.container {
+* {
   box-sizing: border-box;
+}
+.container {
   height: 100%;
   padding: 10px;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-areas:
+    'nav header'
+    'nav main';
   gap: 10px;
   background-color: rgb(242, 244, 246);
 }
+nav {
+  grid-area: nav;
+  width: 200px;
+  padding: 10px;
+  background-color: white;
+  border-radius: 10px;
+}
 header {
-  height: 60px;
-  padding: 0 20px;
+  grid-area: header;
+  padding: 10px 15px;
   font-size: 20px;
   align-content: center;
   background-color: white;
   border-radius: 10px;
 }
 main {
+  grid-area: main;
   overflow: auto;
-  padding: 20px 40px;
+  padding: 10px 25px;
   flex: 1;
   background-color: white;
   border-radius: 10px;
