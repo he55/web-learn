@@ -26,6 +26,7 @@ const loadData = async () => {
   list.value = listData
 }
 const loadDoc = async (pid) => {
+  html.value = ''
   const res = await fetch(`/medical/api/subsequentvisit/getresult2?pid=${pid}&token=qwe123asd`)
   if (res.status === 200) {
     const data = await res.json()
