@@ -1,20 +1,69 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import markdownit from 'markdown-it'
 
+const p = new URLSearchParams(location.search)
+const k = p.get('k')
+
+let listData = []
+const list = ref([])
+const selectedItem = ref({})
+const searchText = ref('')
+
 const md = markdownit()
-const doc = ref({})
 const html = ref('')
 
+const dateFormat = (time) => {
+  if (!time) {
+    return ''
+  }
+  return time.slice(0, 19).replace('T', ' ')
+}
+
 const loadData = async () => {
-  const res = await fetch('/data.json')
-  const data = await res.json()
-  doc.value = data
-  html.value = md.render(data.output)
+  const res = await fetch(`/medical/api/subsequentvisit/getvalue?id=${k}&token=qwe123asd`)
+  listData = await res.json()
+  list.value = listData
+}
+const loadDoc = async (pid) => {
+  const res = await fetch(`/medical/api/subsequentvisit/getresult2?pid=${pid}&token=qwe123asd`)
+  if (res.status === 200) {
+    const data = await res.json()
+    html.value = md.render(data.error || data.content)
+  } else if (res.status === 500) {
+    const err = await res.text()
+    html.value = `<h2>${err}</h2>`
+  } else {
+    alert('请求失败，请稍后重试')
+  }
+}
+const regen = async (pid) => {
+  const res = await fetch(`/medical/api/subsequentvisit/createtask2?pid=${pid}&token=qwe123asd`, {
+    method: 'POST',
+  })
+  if (res.status === 200) {
+    alert('正在生成结果，请稍后查看内容')
+  } else {
+    alert('请求失败，请稍后重试')
+  }
 }
 const reload = () => {
   location.reload()
 }
+const itemClick = (item) => {
+  selectedItem.value = item
+  loadDoc(item.PatientNumber)
+}
+
+watch(searchText, () => {
+  const str = searchText.value
+  if (str) {
+    list.value = listData.filter((x) => x.Name.includes(str))
+  } else {
+    list.value = listData
+  }
+})
+
 onMounted(() => {
   loadData()
 })
@@ -27,30 +76,55 @@ onMounted(() => {
         <p>病人列表</p>
         <button class="reload" @click="reload">刷新</button>
       </div>
-      <input type="search" placeholder="搜索" class="search" />
+      <input type="search" v-model="searchText" placeholder="搜索" class="search" />
       <div class="persons-wrapper">
         <ul class="persons">
-          <li>12345</li>
-          <li>12345</li>
-          <li class="active">12345</li>
-          <li>12345</li>
-          <li>12345</li>
-          <li>12345</li>
-          <li>12345</li>
-          <li>12345</li>
-          <li>12345</li>
-          <li>12345</li>
+          <li
+            @click="itemClick(item)"
+            :class="{ active: selectedItem === item }"
+            v-for="item in list"
+            :key="item.Id"
+          >
+            <p>
+              <strong>{{ item.Name }}</strong>
+            </p>
+            <p>
+              <span>{{ item.ActiveStateName }}</span> <span>{{ item.VisitTypeName }}</span>
+            </p>
+            <p>{{ dateFormat(item.LastConsumptionTime) }}</p>
+          </li>
         </ul>
       </div>
     </nav>
     <header>
-      <p>
-        <strong>姓名：</strong>{{ doc.patient_name }} &nbsp;&nbsp;&nbsp;&nbsp;
-        <strong>病人编号：</strong>{{ doc.patient_id }} &nbsp;&nbsp;&nbsp;&nbsp;
-        <strong>创建时间：</strong>{{ doc.created_at?.slice(0, 19).replace('T', ' ') }}
-      </p>
+      <table>
+        <tbody>
+          <tr>
+            <td><strong>姓名：</strong>{{ selectedItem.Name }}</td>
+            <td><strong>就诊卡号：</strong>{{ selectedItem.HospitalNumber }}</td>
+            <td><strong>复诊类型：</strong>{{ selectedItem.VisitTypeName }}</td>
+          </tr>
+          <tr>
+            <td><strong>科室：</strong>{{ selectedItem.DepartmentName }}</td>
+            <td><strong>医生：</strong>{{ selectedItem.DoctorName }}</td>
+            <td><strong>医助：</strong>{{ selectedItem.AssistDoctorName }}</td>
+          </tr>
+          <tr>
+            <td><strong>来院情况：</strong>{{ selectedItem.Description }}</td>
+            <td><strong>活跃状态：</strong>{{ selectedItem.ActiveStateName }}</td>
+            <td><strong>备注：</strong>{{ selectedItem.Remarks }}</td>
+          </tr>
+        </tbody>
+      </table>
     </header>
     <main>
+      <button
+        class="regen"
+        v-show="selectedItem.PatientNumber"
+        @click="regen(selectedItem.PatientNumber)"
+      >
+        重新生成
+      </button>
       <div class="markdown" v-html="html"></div>
     </main>
   </div>
@@ -64,18 +138,16 @@ onMounted(() => {
   height: 100%;
   padding: 10px;
   display: grid;
-  grid-template-columns: 200px 1fr;
+  grid-template-columns: 220px 1fr;
   grid-template-rows: auto 1fr;
   gap: 10px;
   background-color: #f2f3f5;
 }
 nav {
   grid-row: 1/3;
-
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: 200px;
   padding: 10px;
   background-color: white;
   border-radius: 10px;
@@ -101,7 +173,6 @@ nav {
     list-style-type: none;
 
     li {
-      height: 100px;
       padding: 5px;
       border-radius: 10px;
       background-color: #f2f3f5;
@@ -117,7 +188,7 @@ nav {
 }
 header {
   padding: 10px 15px;
-  font-size: 20px;
+  font-size: 18px;
   align-content: center;
   background-color: white;
   border-radius: 10px;
@@ -128,6 +199,13 @@ main {
   flex: 1;
   background-color: white;
   border-radius: 10px;
+}
+.regen {
+  padding: 2px 8px;
+}
+
+table {
+  width: 100%;
 }
 
 .markdown * {
