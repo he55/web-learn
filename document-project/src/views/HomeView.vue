@@ -78,24 +78,22 @@ onMounted(() => {
         <button class="reload" @click="reload">刷新</button>
       </div>
       <input type="search" v-model="searchText" placeholder="搜索" class="search" />
-      <div class="persons-wrapper">
-        <ul class="persons">
-          <li
-            @click="itemClick(item)"
-            :class="{ active: selectedItem === item }"
-            v-for="item in list"
-            :key="item.Id"
-          >
-            <p>
-              <strong>{{ item.Name }}</strong>
-            </p>
-            <p>
-              <span>{{ item.ActiveStateName }}</span> <span>{{ item.VisitTypeName }}</span>
-            </p>
-            <p>{{ dateFormat(item.LastConsumptionTime) }}</p>
-          </li>
-        </ul>
-      </div>
+      <ul class="persons">
+        <li
+          @click="itemClick(item)"
+          :class="{ active: selectedItem === item }"
+          v-for="item in list"
+          :key="item.Id"
+        >
+          <p>
+            <strong>{{ item.Name }}</strong>
+          </p>
+          <p>
+            <span>{{ item.ActiveStateName }}</span> <span>{{ item.VisitTypeName }}</span>
+          </p>
+          <p>{{ dateFormat(item.LastConsumptionTime) }}</p>
+        </li>
+      </ul>
     </nav>
     <header>
       <table>
@@ -163,10 +161,8 @@ nav {
   .search {
     padding: 2px;
   }
-  .persons-wrapper {
-    overflow-y: auto;
-  }
   .persons {
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -207,6 +203,7 @@ main {
 
 table {
   width: 100%;
+  table-layout: fixed;
 }
 
 .markdown * {
