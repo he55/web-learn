@@ -2,7 +2,7 @@
 
 <template>
   <div class="container">
-    <table border="1" cellspacing="0">
+    <table>
       <thead>
         <tr>
           <td colspan="11">昆明博骨风湿病中西医结合医院一病区工作日志</td>
@@ -129,6 +129,7 @@
     </table>
   </div>
 </template>
+
 <style>
 .container {
   box-sizing: border-box;
@@ -142,9 +143,13 @@ table {
   font-size: 18px;
   font-weight: bold;
   text-align: center;
+  border-collapse: collapse;
 }
 thead {
   font-size: 30px;
   font-weight: bold;
+}
+td {
+  border: 1px solid black;
 }
 </style>
