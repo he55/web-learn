@@ -1,12 +1,20 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { token } from '@/helper'
 
 const router = useRouter()
 const dict = ref({})
 
 const loadData = async () => {
-  const res = await fetch(import.meta.env.VITE_API_URL + '/api/dashboard/getsettings')
+  const res = await fetch(import.meta.env.VITE_API_URL + '/api/dashboard/getsettings', {
+    headers: {
+      ...token,
+    },
+  })
+  if (res.status !== 200) {
+    return
+  }
   dict.value = await res.json()
 }
 const saveSettings = async () => {
@@ -14,6 +22,7 @@ const saveSettings = async () => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...token,
     },
     body: JSON.stringify(dict.value),
   })
@@ -32,8 +41,7 @@ onMounted(() => {
   <div class="container">
     <div class="btn-group">
       <button @click="saveSettings">保存</button> &nbsp;
-      <button @click="gotoHome">返回主页</button>
-      <br /><br />
+      <button @click="gotoHome" style="display: none">返回主页</button>
     </div>
     <div class="table">
       <div class="item" v-for="(v, k) in dict" :key="k">
@@ -44,20 +52,27 @@ onMounted(() => {
   </div>
 </template>
 
-<style>
+<style scoped>
 .container {
   overflow-y: auto;
+  padding: 0 5px;
 }
 .btn-group {
   position: fixed;
-  left: 500px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px;
+  background-color: white;
 
   button {
     padding: 2px 10px;
+    font-size: 20px;
   }
 }
 .table {
   display: table;
+  margin-top: 60px;
 }
 .item {
   display: table-row;

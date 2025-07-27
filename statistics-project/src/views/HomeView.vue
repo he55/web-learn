@@ -1,4 +1,5 @@
 <script setup>
+import { token } from '@/helper'
 import { onMounted, onUnmounted, ref } from 'vue'
 
 const date = ref('')
@@ -14,7 +15,14 @@ const dateFormat = (date) => {
 
 const loadData = async () => {
   date.value = dateFormat(new Date())
-  const res = await fetch(import.meta.env.VITE_API_URL + '/api/dashboard/getinpatientdashboard')
+  const res = await fetch(import.meta.env.VITE_API_URL + '/api/dashboard/getinpatientdashboard', {
+    headers: {
+      ...token,
+    },
+  })
+  if (res.status !== 200) {
+    return
+  }
   dict.value = await res.json()
 }
 
@@ -161,7 +169,7 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style>
+<style scoped>
 .container {
   box-sizing: border-box;
   height: 100%;
