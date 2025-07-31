@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <!-- <script src="//chii.liriliri.io/playground/target.js"></script> -->
+    <script>
+    //   eruda.init();
+    </script>
+    <style>
+        .container{
+            display: flex;
+            /* width: 400px; */
+            height: 100px;
+        }
+        .box1{
+            flex: 1 ;
+            background-color: red;
+        }
+        .box2{
+            /* width: 0; */
+            min-width: 0;
+            overflow-x: hidden;
+            flex: 1 ;
+            background-color: green;
+        }
+        .box3{
+            flex: 1 ;
+            background-color: blue;
+        }
+        .box4{
+            width: 500px;
+            height: 50px;
+            background-color: yellow;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="container"> 
+        <div class="box1"></div>
+        <div class="box2">
+            <div class="box4"></div>
+        </div>
+        <div class="box3"></div>
+    </div>
+  </body>
+</html>
