@@ -9,6 +9,8 @@ let listData = []
 const list = ref([])
 const selectedItem = ref({})
 const searchText = ref('')
+const doc_records = ref([])
+const selectedDoc = ref('')
 
 const md = markdownit()
 const html = ref('')
@@ -25,9 +27,13 @@ const loadData = async () => {
   listData = await res.json()
   list.value = listData
 }
-const loadDoc = async (pid) => {
-  html.value = ''
-  const res = await fetch(`/medical/api/subsequentvisit/getresult2?pid=${pid}&token=qwe123asd`)
+const loadDocRecords = async (pid) => {
+  const res = await fetch(`/medical/api/subsequentvisit/getresult2list?pid=${pid}&token=qwe123asd`)
+  const list = await res.json()
+  return list
+}
+const loadDoc = async (id) => {
+  const res = await fetch(`/medical/api/subsequentvisit/getresult2byid?id=${id}&token=qwe123asd`)
   if (res.status === 200) {
     const data = await res.json()
     html.value = md.render(data.error || data.content)
@@ -51,17 +57,27 @@ const regen = async (pid) => {
 const reload = () => {
   location.reload()
 }
-const itemClick = (item) => {
+const itemClick = async (item) => {
+  html.value = ''
+  selectedDoc.value = ''
   selectedItem.value = item
-  loadDoc(item.PatientNumber)
+  const list = await loadDocRecords(item.PatientNumber)
+  doc_records.value = list
+  if (list.length) {
+    selectedDoc.value = list[0].id
+  }
 }
 
-watch(searchText, () => {
-  const str = searchText.value
+watch(searchText, (str) => {
   if (str) {
     list.value = listData.filter((x) => x.Name.includes(str))
   } else {
     list.value = listData
+  }
+})
+watch(selectedDoc, (val) => {
+  if (val) {
+    loadDoc(val)
   }
 })
 
@@ -81,7 +97,7 @@ onMounted(() => {
       <ul class="persons">
         <li
           @click="itemClick(item)"
-          :class="{ active: selectedItem === item }"
+          :class="{ active: selectedItem === item, green: item.LastCreateTime }"
           v-for="item in list"
           :key="item.Id"
         >
@@ -117,13 +133,15 @@ onMounted(() => {
       </table>
     </header>
     <main>
-      <button
-        class="regen"
-        v-show="selectedItem.PatientNumber"
-        @click="regen(selectedItem.PatientNumber)"
-      >
-        重新生成
-      </button>
+      <div v-show="selectedItem.PatientNumber">
+        <button class="regen" @click="regen(selectedItem.PatientNumber)">重新生成</button>
+        <select class="doc-select" v-model="selectedDoc">
+          <option value="" disabled>-- 请选择记录 --</option>
+          <option :value="item.id" v-for="item in doc_records" :key="item.id">
+            {{ dateFormat(item.createTime) }}
+          </option>
+        </select>
+      </div>
       <div class="markdown" v-html="html"></div>
     </main>
   </div>
@@ -181,6 +199,9 @@ nav {
     li:hover {
       color: #1e80ff;
     }
+    .green {
+      color: green;
+    }
   }
 }
 header {
@@ -200,7 +221,11 @@ main {
 .regen {
   padding: 2px 8px;
 }
-
+.doc-select {
+  width: 170px;
+  margin-left: 10px;
+  padding: 2px 8px;
+}
 table {
   width: 100%;
   table-layout: fixed;
