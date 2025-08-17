@@ -9,7 +9,7 @@ export default function Home() {
   const [label2Text, setLabel2Text] = useState('')
   const [label3Text, setLabel3Text] = useState('')
 
-  const bgImg = require('./assets/1.jpg')
+  const bgImg = require('./assets/1.png')
   const [bgImage, setBgImage] = useState(bgImg)
 
   const loadImage = async () => {
@@ -66,10 +66,7 @@ export default function Home() {
 
     const b = result.filter((x) => x.state === 0)
     if (b.length) {
-      let str = `${b[0].number} ${b[0].name}`
-      if (b.length > 1) {
-        str += `  ${b[1].number} ${b[1].name}`
-      }
+      const str = b.map((x) => `${x.number} ${x.name}`).join('\n')
       setLabel3Text(str)
     } else {
       setLabel3Text('')
@@ -130,23 +127,25 @@ const styles = StyleSheet.create({
     resizeMode: 'stretch',
   },
   text: {
-    width: 480,
-    height: 85,
+    width: 740,
+    height: 125,
     position: 'absolute',
-    left: 190,
-    fontSize: 45,
+    left: 280,
+    fontSize: 70,
     fontWeight: 'bold',
-    lineHeight: 85,
+    lineHeight: 125,
     textAlign: 'center',
-    // backgroundColor:'green',
+    // backgroundColor: 'green',
   },
   label1: {
-    bottom: 265,
+    bottom: 806,
   },
   label2: {
-    bottom: 160,
+    bottom: 622,
   },
   label3: {
-    bottom: 55,
+    height: 460,
+    bottom: 100,
+    lineHeight: 110,
   },
 })
