@@ -107,7 +107,7 @@ export const getPatientRegInfo = (patientId: number) => {
 }
 
 export const createNewCheckInfo = (regId: number) => {
-  return axios.post(`/api/ICDDiag/CreateNewCheckInfo?regId=${regId}`)
+  return axios.post(`/api/ICDDiag/CreateNewCheckInfo?regId=${regId}`) as Promise<void>
 }
 
 export const getImageByCheckId = (checkId: number) => {
@@ -139,7 +139,7 @@ export const getPersonICDInfo = (id: number) => {
 }
 
 export const updatePersonICDInfo = (id: number, data: ICDDiagItem[]) => {
-  return axios.put(`/api/ICDDiag/UpdatePersonICDInfo?id=${id}`, data)
+  return axios.put(`/api/ICDDiag/UpdatePersonICDInfo?id=${id}`, data) as Promise<void>
 }
 
 export const getPersonDiag = (id: number) => {
@@ -147,9 +147,9 @@ export const getPersonDiag = (id: number) => {
 }
 
 export const deletePersonDiag = (id: number) => {
-  return axios.delete(`/api/ICDDiag/DeletePersonDiag?id=${id}`)
+  return axios.delete(`/api/ICDDiag/DeletePersonDiag?id=${id}`) as Promise<void>
 }
 
 export const updatePersonDiag = (id: number, data: Tooth) => {
-  return axios.put(`/api/ICDDiag/UpdatePersonDiag?id=${id}`, data)
+  return axios.put(`/api/ICDDiag/UpdatePersonDiag?id=${id}`, data) as Promise<void>
 }
