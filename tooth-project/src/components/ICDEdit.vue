@@ -1,63 +1,65 @@
 <script setup lang="ts">
-import { reactive, ref, useTemplateRef } from 'vue'
+import { onMounted, reactive, ref, useTemplateRef, watch } from 'vue'
 import ToothArea from '@/components/ToothArea.vue'
+import * as api from '@/api'
+import { ElMessage } from 'element-plus'
 
-const props = defineProps<{
-  toothData: string
+const emit = defineEmits<{
+  done: []
 }>()
 
-interface Tooth {
-  toothPosition: string
-  diagnosis: string
-  isMainsuit: boolean
-  priority: number
-  suggestions: string[]
-  description?: string
-}
+const { diagId } = defineProps<{
+  diagId: number
+}>()
 
-const toothCode = ref(props.toothData)
 const formRef = useTemplateRef('formRef')
-const formData = reactive<Tooth>({
-  toothPosition: '6',
-  diagnosis: '',
+const formData = ref<api.Tooth>({
+  toothCode: '11',
+  diagnosis: null,
   isMainsuit: true,
-  priority: 2,
+  priority: 0,
   suggestions: [],
   description: '',
 })
-const diagnosisData = ref([
-  {
-    value: '',
-    label: '牙齿数量问题',
-    children: [
-      { value: '', label: '牙列缺损' },
-      { value: '', label: '先天乳牙缺失' },
-    ],
-  },
-  { value: '', label: '牙齿位置问题', children: [{ value: '', label: '乳牙滞留' }] },
-  {
-    value: '',
-    label: '牙齿形态问题',
-    children: [
-      { value: '', label: '过小牙' },
-      { value: '', label: '伸长牙' },
-    ],
-  },
-])
-const suggestionList = ref([
-  { id: 1, name: '建议1' },
-  { id: 2, name: '建议2' },
-  { id: 3, name: '建议3' },
-])
+const diagnosisData = ref<api.DentalDiagItem[]>([])
+const suggestionList = ref<api.DentalTreatmentItem[]>([])
+
+const save = async () => {
+  await api.updatePersonDiag(diagId, formData.value)
+  ElMessage.success('保存成功')
+  emit('done')
+}
+
+onMounted(async () => {
+  formData.value = await api.getPersonDiag(diagId)
+  diagnosisData.value = await api.getDentalDiag()
+
+  const id = formData.value.diagnosis?.at(-1)
+  if (id) {
+    suggestionList.value = await api.getDentalTreatmentRec(id)
+  }
+
+  watch(
+    () => formData.value.diagnosis,
+    async (newVal) => {
+      formData.value.suggestions = []
+      suggestionList.value = []
+      if (newVal) {
+        suggestionList.value = await api.getDentalTreatmentRec(newVal[1])
+      }
+    },
+  )
+})
 </script>
 
 <template>
   <el-form label-width="auto" ref="formRef" :model="formData">
     <el-form-item label="牙位">
-      <ToothArea :tooth-code="toothCode" />
+      <ToothArea :tooth-code="formData.toothCode" />
     </el-form-item>
     <el-form-item label="诊断">
       <el-cascader
+        v-model="formData.diagnosis"
         placeholder="选择诊断"
         clearable
         :show-all-levels="false"
@@ -82,9 +84,9 @@ const suggestionList = ref([
       <el-select multiple clearable placeholder="选择建议" v-model="formData.suggestions">
         <el-option
           v-for="item in suggestionList"
-          :key="item.id"
-          :label="item.name"
-          :value="item.id"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
         ></el-option>
       </el-select>
     </el-form-item>
@@ -97,8 +99,8 @@ const suggestionList = ref([
       ></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" style="margin-left: auto">保存</el-button>
-      <el-button>取消</el-button>
+      <el-button @click="save" type="primary" style="margin-left: auto">保存</el-button>
+      <el-button @click="$emit('done')">取消</el-button>
     </el-form-item>
   </el-form>
 </template>
