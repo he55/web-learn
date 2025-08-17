@@ -7,7 +7,12 @@ import * as api from '@/api'
 import { formatDateTime } from '@/utils'
 
 const p = new URLSearchParams(location.search)
-const patientId = p.get('patientId')
+const patientIdStr = p.get('patientId')
+
+let patientId = 0
+if (patientIdStr) {
+  patientId = parseInt(patientIdStr)
+}
 
 provide('patientId', patientId)
 
