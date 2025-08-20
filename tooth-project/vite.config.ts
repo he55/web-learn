@@ -17,4 +17,5 @@ export default defineConfig({
       '/api': 'http://localhost:7050',
     },
   },
+  base: '/ai',
 })

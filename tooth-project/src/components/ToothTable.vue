@@ -4,7 +4,7 @@ import { onMounted, ref, shallowRef, watch } from 'vue'
 import ICDEdit from '@/components/ICDEdit.vue'
 import DiagnosisEdit from '@/components/DiagnosisEdit.vue'
 import * as api from '@/api'
-import { formatDate } from '@/utils'
+import { formatDate } from '@/utils/date'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const { reportId } = defineProps<{
@@ -20,15 +20,18 @@ const priorityText = ['无', '低', '中', '高']
 const priorityType = ['info', 'success', 'warning', 'danger'] as const
 
 const diagId = ref(0)
+const editable = ref(false)
 const handleAdd = (row: api.PersonDiagItem) => {
   diagId.value = row.id
   dialogForm2Visible.value = true
 }
 const handleView = (row: api.PersonDiagItem) => {
+  editable.value = false
   diagId.value = row.id
   dialogFormVisible.value = true
 }
 const handleEdit = (row: api.PersonDiagItem) => {
+  editable.value = true
   diagId.value = row.id
   dialogFormVisible.value = true
 }
@@ -76,7 +79,7 @@ onMounted(() => {
 
 <template>
   <el-dialog v-model="dialogFormVisible" destroy-on-close title="编辑口腔问题" width="500">
-    <ICDEdit @done="diagSaved" :diag-id="diagId" />
+    <ICDEdit @done="diagSaved" :diag-id="diagId" :editable="editable" />
   </el-dialog>
   <el-dialog v-model="dialogForm2Visible" destroy-on-close title="编辑诊断" width="500">
     <DiagnosisEdit @done="icdSaved" :diag-id="diagId" />

@@ -2,7 +2,7 @@
 import { inject, onMounted, ref, shallowRef } from 'vue'
 import * as api from '@/api'
 import { ElMessage } from 'element-plus'
-import { formatDateTime } from '@/utils'
+import { formatDateTime } from '@/utils/date'
 
 const emit = defineEmits<{
   requestClose: [needReload?: boolean]

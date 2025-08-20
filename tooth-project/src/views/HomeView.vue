@@ -4,7 +4,9 @@ import markdownit from 'markdown-it'
 import { onMounted, provide, ref, watch } from 'vue'
 import NewInspect from '@/components/NewInspect.vue'
 import * as api from '@/api'
-import { formatDateTime } from '@/utils'
+import { formatDateTime } from '@/utils/date'
+import { ArrowLeftBold, ArrowRightBold } from '@element-plus/icons-vue'
+import { ElNotification } from 'element-plus'
 
 const p = new URLSearchParams(location.search)
 const patientIdStr = p.get('patientId')
@@ -23,7 +25,6 @@ const dialogFormVisible = ref(false)
 
 const reportId = ref<number>()
 const checkRecord = ref<api.DentalCheckRecordDto[]>([])
-const imgUrl = ref('')
 
 const closeDialog = (needReload?: boolean) => {
   dialogFormVisible.value = false
@@ -32,20 +33,65 @@ const closeDialog = (needReload?: boolean) => {
   }
 }
 
-watch(reportId, async (newVal) => {
-  if (newVal) {
-    const imgs = await api.getImageByCheckId(newVal)
-    if (imgs.length > 0) {
-      imgUrl.value = imgs[0].url
-    } else {
-      imgUrl.value = ''
-    }
+const imgUrl = ref('')
+const images = ref<string[]>([])
+let imageList: api.CheckImage[] = []
+let imageIndex = 0
 
-    const data = await api.getAIReport(newVal)
-    html.value = md.render(data.report)
+const setImageList = (data: api.CheckImage[]) => {
+  imageIndex = 0
+  imageList = data
+  images.value = data.map((x) => x.url)
+
+  if (data.length > 0) {
+    imgUrl.value = data[0].url
   } else {
     imgUrl.value = ''
-    html.value = ''
+  }
+}
+
+const switchImage = (mode: 'prev' | 'next') => {
+  const len = imageList.length
+  if (len === 0) {
+    return
+  }
+
+  if (mode === 'next') {
+    if (imageIndex === len - 1) {
+      imageIndex = 0
+    } else {
+      imageIndex++
+    }
+  } else {
+    if (imageIndex === 0) {
+      imageIndex = len - 1
+    } else {
+      imageIndex--
+    }
+  }
+
+  imgUrl.value = imageList[imageIndex].url
+}
+
+const analyseImage = async () => {
+  await api.analyseImage(imageList[imageIndex].imageId, reportId.value!)
+  ElNotification({
+    title: '提示',
+    message: '生成报告需要几分钟，请稍后查看',
+    type: 'primary',
+  })
+}
+
+watch(reportId, async (newVal) => {
+  setImageList([])
+  html.value = ''
+
+  if (newVal) {
+    const imageData = await api.getImageByCheckId(newVal)
+    setImageList(imageData)
+
+    const reportData = await api.getAIReport(newVal)
+    html.value = md.render(reportData.report)
   }
 })
 
@@ -75,16 +121,32 @@ onMounted(async () => {
                 :value="item.id"
               />
             </el-select>
-            <el-button type="primary" :disabled="!reportId" style="margin-left: 10px"
-              >AI分析</el-button
+            <el-button
+              type="primary"
+              @click="analyseImage"
+              :disabled="!reportId"
+              style="margin-left: 10px"
             >
-            <el-button type="primary" @click="dialogFormVisible = true" style="margin-left: auto"
-              >新建检查</el-button
-            >
+              AI分析
+            </el-button>
+            <el-button type="primary" @click="dialogFormVisible = true" style="margin-left: auto">
+              新建检查
+            </el-button>
           </el-header>
-          <el-main>
-            <img :src="imgUrl" alt="" />
+          <el-main style="padding: 0">
+            <el-image class="img" fit="contain" :src="imgUrl" :preview-src-list="images" />
           </el-main>
+          <el-footer height="25px" style="text-align: center">
+            <div>
+              <el-button type="primary" @click="switchImage('prev')" :disabled="images.length <= 1">
+                <el-icon><ArrowLeftBold /></el-icon> 上一张
+              </el-button>
+              <el-button type="primary" @click="switchImage('next')" :disabled="images.length <= 1">
+                下一张
+                <el-icon><ArrowRightBold /></el-icon>
+              </el-button>
+            </div>
+          </el-footer>
         </el-container>
       </el-main>
       <el-footer height="400px">
@@ -116,20 +178,16 @@ onMounted(async () => {
 .el-aside {
   background-color: white;
 }
+.img {
+  width: 100%;
+  height: 98%;
+}
 </style>
 
 <style>
 /* Markdown样式优化 */
 .markdown-content {
-  line-height: 1.8;
-  color: #333;
-  font-size: 16px;
-  max-width: 100%;
-  overflow-wrap: break-word;
   padding: 20px;
-  background: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .markdown-content h1,

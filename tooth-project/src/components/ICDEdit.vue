@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, useTemplateRef, watch } from 'vue'
+import { onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import ToothArea from '@/components/ToothArea.vue'
 import * as api from '@/api'
 import { ElMessage } from 'element-plus'
@@ -8,8 +8,9 @@ const emit = defineEmits<{
   done: []
 }>()
 
-const { diagId } = defineProps<{
+const { diagId, editable = true } = defineProps<{
   diagId: number
+  editable?: boolean
 }>()
 
 const formRef = useTemplateRef('formRef')
@@ -21,8 +22,8 @@ const formData = ref<api.Tooth>({
   suggestions: [],
   description: '',
 })
-const diagnosisData = ref<api.DentalDiagItem[]>([])
-const suggestionList = ref<api.DentalTreatmentItem[]>([])
+const diagnosisData = shallowRef<api.DentalDiagItem[]>([])
+const suggestionList = shallowRef<api.DentalTreatmentItem[]>([])
 
 const save = async () => {
   await api.updatePersonDiag(diagId, formData.value)
@@ -53,9 +54,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <el-form label-width="auto" ref="formRef" :model="formData">
-    <el-form-item label="牙位">
+  <el-form label-width="auto" ref="formRef" :model="formData" :disabled="!editable">
+    <el-form-item label=" ">
       <ToothArea :tooth-code="formData.toothCode" />
+    </el-form-item>
+    <el-form-item label="牙位">
+      <el-input v-model="formData.toothCode" />
     </el-form-item>
     <el-form-item label="诊断">
       <el-cascader
