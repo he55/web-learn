@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+
+  <body>
+    <form action="" method="get">
+      <label>
+        账户：<input type="text" name="account" value="xm" maxlength="10" />
+      </label>
+      <br />
+      <label>
+        密码：
+        <input type="password" name="password" value="123" maxlength="6" />
+      </label>
+      <br />
+      性别：
+      <label><input type="radio" name="gender" value="male" checked />男</label>
+      <label><input type="radio" name="gender" value="female" />女</label>
+      <br />
+      爱好：
+      <label><input type="checkbox" name="hobby" value="smoke" />抽烟</label>
+      <label>
+        <input type="checkbox" name="hobby" value="drink" checked />喝酒
+      </label>
+      <label> <input type="checkbox" name="hobby" value="perm" />染发</label>
+      <br />
+      <label>
+        其他： <textarea name="other" cols="15" rows="3"></textarea>
+      </label>
+      <br />
+      <label>
+        籍贯：
+        <select name="place">
+          <option value="hb">湖北</option>
+          <option value="jx" selected>江西</option>
+          <option value="bj" disabled>北京</option>
+          <option value="gz">贵州</option>
+        </select>
+      </label>
+      <br />
+      <input type="hidden" name="token" value="fkkdkdddjdjdjflflf" />
+      <button type="submit">确认</button>
+      <button type="reset">重置</button>
+      <button type="button">检测账户是否被注册</button>
+    </form>
+  </body>
+</html>
