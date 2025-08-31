@@ -6,6 +6,7 @@ import DiagnosisEdit from '@/components/DiagnosisEdit.vue'
 import * as api from '@/api'
 import { formatDate } from '@/utils/date'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import * as user from '@/stores/userStore'
 
 const { reportId } = defineProps<{
   reportId?: number
@@ -65,12 +66,34 @@ const reloadData = async () => {
   }
 }
 
+const selecteds = shallowRef<api.PersonDiagItem[]>([])
+const handleSelectionChange = (val: api.PersonDiagItem[]) => {
+  selecteds.value = val
+}
+
+const deleteSelect = async () => {
+  await ElMessageBox.confirm('是否要删除数据', '确认操作', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+
+  await api.batchDeletePersonDiag(
+    user.patientId,
+    selecteds.value.map((x) => x.id),
+  )
+  ElMessage.success('删除成功')
+  await reloadData()
+}
+
 watch(
   () => reportId,
   () => {
     reloadData()
   },
 )
+
+defineExpose({ reloadData })
 
 onMounted(() => {
   reloadData()
@@ -84,7 +107,15 @@ onMounted(() => {
   <el-dialog v-model="dialogForm2Visible" destroy-on-close title="编辑诊断" width="500">
     <DiagnosisEdit @done="icdSaved" :diag-id="diagId" />
   </el-dialog>
-  <el-table border stripe :data="tableData" :show-overflow-tooltip="true" style="height: 100%">
+  <el-table
+    border
+    stripe
+    :data="tableData"
+    :show-overflow-tooltip="true"
+    empty-text="无数据"
+    @selection-change="handleSelectionChange"
+    style="height: 100%"
+  >
     <el-table-column type="selection" width="50" />
     <el-table-column prop="toothCode" label="牙位/部位" width="100" />
     <el-table-column prop="diagName" label="诊断" min-width="150" />
@@ -112,6 +143,11 @@ onMounted(() => {
       </template>
     </el-table-column>
     <el-table-column label="操作" width="120" fixed="right">
+      <template #header>
+        <el-button type="danger" size="small" :disabled="!selecteds.length" @click="deleteSelect"
+          >删除选中</el-button
+        >
+      </template>
       <template #default="{ row }: ColumnType">
         <el-button
           link

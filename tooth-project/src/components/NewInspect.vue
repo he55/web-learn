@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { inject, onMounted, ref, shallowRef } from 'vue'
+import { onMounted, ref, shallowRef } from 'vue'
 import * as api from '@/api'
 import { ElMessage } from 'element-plus'
 import { formatDateTime } from '@/utils/date'
+import * as user from '@/stores/userStore'
 
 const emit = defineEmits<{
   requestClose: [needReload?: boolean]
@@ -11,8 +12,6 @@ const emit = defineEmits<{
 type ColumnType = {
   row: api.MzRegInfoDto
 }
-
-const patientId = inject<number>('patientId')
 
 const tableData = shallowRef<api.MzRegInfoDto[]>([])
 
@@ -28,9 +27,7 @@ const save = async () => {
 }
 
 onMounted(async () => {
-  if (patientId) {
-    tableData.value = await api.getPatientRegInfo(patientId)
-  }
+  tableData.value = await api.getPatientRegInfo(user.patientId)
 })
 </script>
 
@@ -39,6 +36,7 @@ onMounted(async () => {
     border
     stripe
     highlight-current-row
+    empty-text="无数据"
     :data="tableData"
     @current-change="handleCurrentChange"
   >

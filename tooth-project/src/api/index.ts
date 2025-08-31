@@ -9,6 +9,7 @@ export type DentalDiagItem = {
 export type DentalTreatmentItem = {
   value: number
   label: string
+  isRecommend: boolean
 }
 
 export type ICDDiagItem = {
@@ -51,6 +52,7 @@ export type DentalCheckRecordDto = {
   id: number
   patientId: number
   regTime: string
+  processState: number
 }
 
 export type AIReport = {
@@ -61,6 +63,11 @@ export type CheckImage = {
   imageId: number
   imageName: string
   url: string
+}
+
+export type AIResult = {
+  status: number
+  msg: string
 }
 
 export const getCheckInfo = (patientId: number) => {
@@ -81,6 +88,10 @@ export const createNewCheckInfo = (regId: number) => {
 
 export const getImageByCheckId = (checkId: number) => {
   return request.get(`/api/ICDDiag/GetImageByCheckId?checkId=${checkId}`) as Promise<CheckImage[]>
+}
+
+export const checkAIReportIsExists = (checkId: number) => {
+  return request.get(`/api/ICDDiag/CheckAIReportIsExists?checkId=${checkId}`) as Promise<AIResult>
 }
 
 export const getAIReport = (checkId: number) => {
@@ -123,6 +134,12 @@ export const getPersonDiag = (id: number) => {
 
 export const deletePersonDiag = (id: number) => {
   return request.delete(`/api/ICDDiag/DeletePersonDiag?id=${id}`) as Promise<void>
+}
+
+export const batchDeletePersonDiag = (patientId: number, ids: number[]) => {
+  return request.delete(`/api/ICDDiag/BatchDeletePersonDiag?patientId=${patientId}`, {
+    data: ids,
+  }) as Promise<void>
 }
 
 export const updatePersonDiag = (id: number, data: Tooth) => {

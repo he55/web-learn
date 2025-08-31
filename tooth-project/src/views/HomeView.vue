@@ -1,22 +1,15 @@
 <script setup lang="ts">
 import ToothTable from '@/components/ToothTable.vue'
 import markdownit from 'markdown-it'
-import { onMounted, provide, ref, watch } from 'vue'
+import { onMounted, ref, useTemplateRef, watch } from 'vue'
 import NewInspect from '@/components/NewInspect.vue'
 import * as api from '@/api'
 import { formatDateTime } from '@/utils/date'
-import { ArrowLeftBold, ArrowRightBold } from '@element-plus/icons-vue'
-import { ElNotification } from 'element-plus'
+import { ArrowLeftBold, ArrowRightBold, Refresh } from '@element-plus/icons-vue'
+import { ElMessage, ElNotification } from 'element-plus'
+import * as user from '@/stores/userStore'
 
-const p = new URLSearchParams(location.search)
-const patientIdStr = p.get('patientId')
-
-let patientId = 0
-if (patientIdStr) {
-  patientId = parseInt(patientIdStr)
-}
-
-provide('patientId', patientId)
+const toothTable = useTemplateRef('toothTable')
 
 const md = markdownit()
 const html = ref('')
@@ -26,10 +19,10 @@ const dialogFormVisible = ref(false)
 const reportId = ref<number>()
 const checkRecord = ref<api.DentalCheckRecordDto[]>([])
 
-const closeDialog = (needReload?: boolean) => {
+const closeDialog = async (needReload?: boolean) => {
   dialogFormVisible.value = false
   if (needReload) {
-    // TODO: reload
+    await reloadData()
   }
 }
 
@@ -80,6 +73,40 @@ const analyseImage = async () => {
     message: '生成报告需要几分钟，请稍后查看',
     type: 'primary',
   })
+  queryReport()
+}
+
+const queryReport = async () => {
+  const checkId = reportId.value
+  if (!checkId) {
+    return
+  }
+
+  try {
+    const result = await api.checkAIReportIsExists(checkId)
+    if (result.status === 0) {
+      setTimeout(queryReport, 5_000)
+    } else if (result.status === 1) {
+      const reportData = await api.getAIReport(checkId)
+      html.value = md.render(reportData.report)
+      await toothTable.value!.reloadData()
+    } else if (result.status === 2) {
+      ElMessage.error('AI报告生成失败，请重试')
+    }
+  } catch {
+    setTimeout(queryReport, 5_000)
+  }
+}
+
+const refresh = () => {
+  location.reload()
+}
+const reloadData = async () => {
+  const list = await api.getCheckInfo(user.patientId)
+  checkRecord.value = list
+  if (list.length > 0) {
+    reportId.value = list[0].id
+  }
 }
 
 watch(reportId, async (newVal) => {
@@ -90,17 +117,20 @@ watch(reportId, async (newVal) => {
     const imageData = await api.getImageByCheckId(newVal)
     setImageList(imageData)
 
-    const reportData = await api.getAIReport(newVal)
-    html.value = md.render(reportData.report)
+    try {
+      const reportData = await api.getAIReport(newVal)
+      html.value = md.render(reportData.report)
+    } catch {
+      const r = checkRecord.value.find((x) => x.id === newVal)
+      if (r && r.processState !== 1) {
+        queryReport()
+      }
+    }
   }
 })
 
 onMounted(async () => {
-  const list = await api.getCheckInfo(patientId)
-  checkRecord.value = list
-  if (list.length > 0) {
-    reportId.value = list[0].id
-  }
+  await reloadData()
 })
 </script>
 
@@ -113,7 +143,12 @@ onMounted(async () => {
       <el-main>
         <el-container style="height: 100%">
           <el-header height="45px" style="display: flex">
-            <el-select v-model="reportId" placeholder="选择检查" style="width: 200px">
+            <el-select
+              v-model="reportId"
+              no-data-text="无数据"
+              placeholder="选择检查"
+              style="width: 200px"
+            >
               <el-option
                 v-for="item in checkRecord"
                 :key="item.id"
@@ -121,20 +156,21 @@ onMounted(async () => {
                 :value="item.id"
               />
             </el-select>
-            <el-button
-              type="primary"
-              @click="analyseImage"
-              :disabled="!reportId"
-              style="margin-left: 10px"
-            >
-              AI分析
+            <el-button @click="refresh" style="margin-left: 10px">
+              <el-icon size="16"><Refresh /></el-icon> &nbsp;刷新
             </el-button>
             <el-button type="primary" @click="dialogFormVisible = true" style="margin-left: auto">
               新建检查
             </el-button>
           </el-header>
           <el-main style="padding: 0">
-            <el-image class="img" fit="contain" :src="imgUrl" :preview-src-list="images" />
+            <el-image
+              class="img"
+              fit="contain"
+              :src="imgUrl"
+              :preview-src-list="images"
+              hide-on-click-modal
+            />
           </el-main>
           <el-footer height="25px" style="text-align: center">
             <div>
@@ -145,12 +181,15 @@ onMounted(async () => {
                 下一张
                 <el-icon><ArrowRightBold /></el-icon>
               </el-button>
+              <el-button type="primary" @click="analyseImage" :disabled="!imgUrl">
+                AI分析
+              </el-button>
             </div>
           </el-footer>
         </el-container>
       </el-main>
       <el-footer height="400px">
-        <ToothTable :report-id="reportId" />
+        <ToothTable ref="toothTable" :report-id="reportId" />
       </el-footer>
     </el-container>
     <el-aside width="50%">

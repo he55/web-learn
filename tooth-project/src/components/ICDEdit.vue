@@ -23,7 +23,12 @@ const formData = ref<api.Tooth>({
   description: '',
 })
 const diagnosisData = shallowRef<api.DentalDiagItem[]>([])
-const suggestionList = shallowRef<api.DentalTreatmentItem[]>([])
+const suggestionList = shallowRef<
+  {
+    label: string
+    options: api.DentalTreatmentItem[]
+  }[]
+>([])
 
 const save = async () => {
   await api.updatePersonDiag(diagId, formData.value)
@@ -31,14 +36,42 @@ const save = async () => {
   emit('done')
 }
 
-onMounted(async () => {
-  formData.value = await api.getPersonDiag(diagId)
-  diagnosisData.value = await api.getDentalDiag()
+const getSuggestionList = async (id: number) => {
+  const data = await api.getDentalTreatmentRec(id)
+  const arr = [
+    {
+      label: '其他治疗建议',
+      options: data.filter((x) => !x.isRecommend),
+    },
+  ]
 
-  const id = formData.value.diagnosis?.at(-1)
-  if (id) {
-    suggestionList.value = await api.getDentalTreatmentRec(id)
+  const b = data.filter((x) => x.isRecommend)
+  if (b.length) {
+    arr.unshift({
+      label: '推荐治疗建议',
+      options: b,
+    })
   }
+  return arr
+}
+
+onMounted(async () => {
+  const data = await api.getPersonDiag(diagId)
+  const data2 = await api.getDentalDiag()
+
+  const id = data.diagnosis?.at(-1)
+  if (id) {
+    for (const element of data2) {
+      const c = element.children?.find((x) => x.value === id)
+      if (c) {
+        data.diagnosis = [element.value, id]
+      }
+    }
+    suggestionList.value = await getSuggestionList(id)
+  }
+
+  formData.value = data
+  diagnosisData.value = data2
 
   watch(
     () => formData.value.diagnosis,
@@ -46,7 +79,7 @@ onMounted(async () => {
       formData.value.suggestions = []
       suggestionList.value = []
       if (newVal) {
-        suggestionList.value = await api.getDentalTreatmentRec(newVal[1])
+        suggestionList.value = await getSuggestionList(newVal[1])
       }
     },
   )
@@ -59,7 +92,7 @@ onMounted(async () => {
       <ToothArea :tooth-code="formData.toothCode" />
     </el-form-item>
     <el-form-item label="牙位">
-      <el-input v-model="formData.toothCode" />
+      <el-input v-model="formData.toothCode" disabled />
     </el-form-item>
     <el-form-item label="诊断">
       <el-cascader
@@ -86,12 +119,14 @@ onMounted(async () => {
     </el-form-item>
     <el-form-item label="治疗建议">
       <el-select multiple clearable placeholder="选择建议" v-model="formData.suggestions">
-        <el-option
-          v-for="item in suggestionList"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        ></el-option>
+        <el-option-group v-for="group in suggestionList" :key="group.label" :label="group.label">
+          <el-option
+            v-for="item in group.options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          ></el-option>
+        </el-option-group>
       </el-select>
     </el-form-item>
     <el-form-item label="备注">
