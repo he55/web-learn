@@ -1,31 +1,20 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { token } from '@/helper'
+import * as api from '@/api'
 
 const router = useRouter()
 const dict = ref({})
 
 const loadData = async () => {
-  const res = await fetch(import.meta.env.VITE_API_URL + '/api/dashboard/getsettings', {
-    headers: {
-      ...token,
-    },
-  })
+  const res = await api.getSettings()
   if (res.status !== 200) {
     return
   }
   dict.value = await res.json()
 }
 const saveSettings = async () => {
-  const res = await fetch(import.meta.env.VITE_API_URL + '/api/dashboard/savesettings', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...token,
-    },
-    body: JSON.stringify(dict.value),
-  })
+  const res = await api.saveSettings(dict.value)
   alert(res.status === 200 ? '保存成功' : '保存失败，请重试')
 }
 const gotoHome = () => {

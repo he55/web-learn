@@ -1,6 +1,6 @@
 <script setup>
-import { token } from '@/helper'
 import { onMounted, onUnmounted, ref } from 'vue'
+import * as api from '@/api'
 
 const date = ref('')
 const dict = ref({})
@@ -15,11 +15,7 @@ const dateFormat = (date) => {
 
 const loadData = async () => {
   date.value = dateFormat(new Date())
-  const res = await fetch(import.meta.env.VITE_API_URL + '/api/dashboard/getinpatientdashboard', {
-    headers: {
-      ...token,
-    },
-  })
+  const res = await api.getInpatientDashboard()
   if (res.status !== 200) {
     return
   }
@@ -44,7 +40,7 @@ onUnmounted(() => {
     <table>
       <thead>
         <tr>
-          <td colspan="11">昆明博骨风湿病中西医结合医院一病区工作日志</td>
+          <td colspan="11" class="table-title">{{ dict['医院名称'] }}</td>
         </tr>
       </thead>
       <tbody>
@@ -214,5 +210,8 @@ td {
   font-size: 20px;
   font-weight: initial;
   white-space: pre-wrap;
+}
+.table-title {
+  height: 65px;
 }
 </style>
