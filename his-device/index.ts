@@ -1,5 +1,7 @@
 import sql from 'mssql'
 
+type CTItem = {}
+
 process.loadEnvFile()
 
 const conn_string = process.env.CONN_STRING
@@ -10,7 +12,7 @@ async function work() {
     return
   }
 
-  const list = (await res.json()) as object[]
+  const list: CTItem[] = <any>await res.json()
 
   const conn = await sql.connect(conn_string)
 
