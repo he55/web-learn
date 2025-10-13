@@ -148,10 +148,8 @@ onMounted(() => {
 </template>
 
 <style scoped>
-* {
-  box-sizing: border-box;
-}
 .container {
+  box-sizing: border-box;
   height: 100%;
   padding: 10px;
   display: grid;
