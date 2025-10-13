@@ -4,6 +4,8 @@ import * as api from '@/api'
 
 const date = ref('')
 const dict = ref({})
+const data1 = ref(new Array(10).fill({ key: ' ', value: ' ' }))
+const data2 = ref(new Array(10).fill({ key: ' ', value: ' ' }))
 
 const dateFormat = (date) => {
   const a = date.toLocaleDateString()
@@ -13,13 +15,44 @@ const dateFormat = (date) => {
   return `${a} ${dayName}`
 }
 
+const fdata = (val) => {
+  const arr = new Array(10).fill({ key: ' ', value: ' ' })
+
+  if (!val) {
+    return arr
+  }
+
+  const lines = val.split('\n')
+  if (lines.length === 0) {
+    return arr
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const str = lines[i]
+    if (!str) {
+      arr[i] = { key: '', value: '' }
+    }
+
+    const index = str.indexOf('=')
+    if (index == -1) {
+      arr[i] = { key: str, value: '' }
+    }
+    arr[i] = { key: str.substring(0, index), value: str.substring(index + 1) }
+  }
+
+  return arr
+}
+
 const loadData = async () => {
   date.value = dateFormat(new Date())
   const res = await api.getInpatientDashboard()
   if (res.status !== 200) {
     return
   }
-  dict.value = await res.json()
+  const data = await res.json()
+  dict.value = data
+  data1.value = fdata(data['手术:今日'])
+  data2.value = fdata(data['手术:明日'])
 }
 
 let intervalId = null
@@ -46,20 +79,17 @@ onUnmounted(() => {
           <td colspan="2">日期</td>
           <td>入院</td>
           <td colspan="2">出院</td>
-          <td colspan="2">手术</td>
-          <td colspan="2">危重</td>
+          <td colspan="4">手术</td>
           <td>值班医生</td>
           <td class="cell">{{ dict['值班医生'] }}</td>
         </tr>
         <tr>
           <td colspan="2" class="cell">{{ date }}</td>
-          <td rowspan="6" class="cell">{{ dict['入院'] }}</td>
+          <td rowspan="6">&nbsp;</td>
           <td>今日</td>
           <td>明日</td>
-          <td>今日</td>
-          <td>明日</td>
-          <td>病危</td>
-          <td>病重</td>
+          <td colspan="2">今日</td>
+          <td colspan="2">明日</td>
           <td>主班护士</td>
           <td class="cell">{{ dict['主班护士'] }}</td>
         </tr>
@@ -67,108 +97,116 @@ onUnmounted(() => {
           <td colspan="2">人数</td>
           <td rowspan="5" class="cell">{{ dict['出院:今日'] }}</td>
           <td rowspan="5" class="cell">{{ dict['出院:明日'] }}</td>
-          <td rowspan="5" class="cell">{{ dict['手术:今日'] }}</td>
-          <td rowspan="5" class="cell">{{ dict['手术:明日'] }}</td>
-          <td rowspan="5" class="cell">{{ dict['危重:病危'] }}</td>
-          <td rowspan="5" class="cell">{{ dict['危重:病重'] }}</td>
+          <td>床号</td>
+          <td>麻醉方式</td>
+          <td>床号</td>
+          <td>麻醉方式</td>
           <td>责1护士</td>
           <td class="cell">{{ dict['责1护士'] }}</td>
         </tr>
         <tr>
           <td>原有</td>
           <td>现有</td>
+          <td class="cell">{{ data1[0].key }}</td>
+          <td class="cell">{{ data1[0].value }}</td>
+          <td class="cell">{{ data2[0].key }}</td>
+          <td class="cell">{{ data2[0].value }}</td>
           <td>责2护士</td>
           <td class="cell">{{ dict['责2护士'] }}</td>
         </tr>
         <tr>
           <td rowspan="3" class="cell">{{ dict['人数:原有'] }}</td>
           <td rowspan="3" class="cell">{{ dict['人数:现有'] }}</td>
+          <td class="cell">{{ data1[1].key }}</td>
+          <td class="cell">{{ data1[1].value }}</td>
+          <td class="cell">{{ data2[1].key }}</td>
+          <td class="cell">{{ data2[1].value }}</td>
           <td>责3护士</td>
           <td class="cell">{{ dict['责3护士'] }}</td>
         </tr>
         <tr>
+          <td class="cell">{{ data1[2].key }}</td>
+          <td class="cell">{{ data1[2].value }}</td>
+          <td class="cell">{{ data2[2].key }}</td>
+          <td class="cell">{{ data2[2].value }}</td>
           <td>小夜班</td>
           <td class="cell">{{ dict['小夜班'] }}</td>
         </tr>
         <tr>
+          <td class="cell">{{ data1[3].key }}</td>
+          <td class="cell">{{ data1[3].value }}</td>
+          <td class="cell">{{ data2[3].key }}</td>
+          <td class="cell">{{ data2[3].value }}</td>
           <td>大夜班</td>
           <td class="cell">{{ dict['大夜班'] }}</td>
         </tr>
         <tr>
-          <td rowspan="4">血压监测</td>
-          <td>Bid</td>
-          <td colspan="2" class="cell">{{ dict['血压监测:Bid'] }}</td>
-          <td rowspan="4">血糖监测</td>
-          <td>三餐后</td>
-          <td colspan="2" class="cell">{{ dict['血糖监测:三餐后'] }}</td>
-          <td rowspan="2">甘精胰岛素</td>
-          <td colspan="2" rowspan="2" class="cell">{{ dict['甘精胰岛素'] }}</td>
+          <td rowspan="3">高血压</td>
+          <td colspan="4" rowspan="3" class="cell">{{ dict['高血压'] }}</td>
+          <td class="cell">{{ data1[4].key }}</td>
+          <td class="cell">{{ data1[4].value }}</td>
+          <td class="cell">{{ data2[4].key }}</td>
+          <td class="cell">{{ data2[4].value }}</td>
+          <td colspan="2" rowspan="2">&nbsp;</td>
         </tr>
         <tr>
-          <td>Tid</td>
-          <td colspan="2" class="cell">{{ dict['血压监测:Tid'] }}</td>
-          <td>早空腹+三餐后</td>
-          <td colspan="2" class="cell">{{ dict['血糖监测:早空腹+三餐后'] }}</td>
+          <td class="cell">{{ data1[5].key }}</td>
+          <td class="cell">{{ data1[5].value }}</td>
+          <td class="cell">{{ data2[5].key }}</td>
+          <td class="cell">{{ data2[5].value }}</td>
         </tr>
         <tr>
-          <td>Q6h</td>
-          <td colspan="2" class="cell">{{ dict['血压监测:Q6h'] }}</td>
-          <td>早空腹+三餐后+睡前</td>
-          <td colspan="2" class="cell">{{ dict['血糖监测:早空腹+三餐后+睡前'] }}</td>
-          <td rowspan="2">普通胰岛素</td>
-          <td colspan="2" rowspan="2" class="cell">{{ dict['普通胰岛素'] }}</td>
+          <td class="cell">{{ data1[6].key }}</td>
+          <td class="cell">{{ data1[6].value }}</td>
+          <td class="cell">{{ data2[6].key }}</td>
+          <td class="cell">{{ data2[6].value }}</td>
+          <td>危重</td>
+          <td class="cell">{{ dict['危重'] }}</td>
         </tr>
         <tr>
-          <td>Q8h</td>
-          <td colspan="2" class="cell">{{ dict['血压监测:Q8h'] }}</td>
-          <td>早空腹+三餐前+三餐后+睡前</td>
-          <td colspan="2" class="cell">{{ dict['血糖监测:早空腹+三餐前+三餐后+睡前'] }}</td>
+          <td rowspan="4">高血糖</td>
+          <td colspan="2">特殊</td>
+          <td colspan="2" class="cell">{{ dict['高血压:特殊'] }}</td>
+          <td class="cell">{{ data1[7].key }}</td>
+          <td class="cell">{{ data1[7].value }}</td>
+          <td class="cell">{{ data2[7].key }}</td>
+          <td class="cell">{{ data2[7].value }}</td>
+          <td>病重</td>
+          <td class="cell">{{ dict['病重'] }}</td>
         </tr>
         <tr>
-          <td>防跌倒坠床</td>
-          <td colspan="4" class="cell">{{ dict['防跌倒坠床'] }}</td>
-          <td>心电监护</td>
-          <td colspan="2" class="cell">{{ dict['心电监护'] }}</td>
-          <td rowspan="2">留置尿管</td>
-          <td colspan="2" rowspan="2" class="cell">{{ dict['留置尿管'] }}</td>
+          <td colspan="2">早空腹+三餐后</td>
+          <td colspan="2" class="cell">{{ dict['高血压:早空腹+三餐后'] }}</td>
+          <td rowspan="2">肾病</td>
+          <td colspan="3" rowspan="2" class="cell">{{ dict['肾病'] }}</td>
+          <td rowspan="2">贫血</td>
+          <td rowspan="2" class="cell">{{ dict['贫血'] }}</td>
         </tr>
         <tr>
-          <td>防压疮</td>
-          <td colspan="4" class="cell">{{ dict['防压疮'] }}</td>
-          <td>红光TDP</td>
-          <td colspan="2" class="cell">{{ dict['红光TDP'] }}</td>
+          <td colspan="2">
+            早空腹+三餐后 <br />
+            +睡前
+          </td>
+          <td colspan="2" class="cell">{{ dict['高血压:早空腹+三餐后+睡前'] }}</td>
         </tr>
         <tr>
-          <td>24h出入量</td>
-          <td colspan="3" class="cell">{{ dict['24h出入量'] }}</td>
-          <td>引流 (VSD)</td>
-          <td colspan="3" class="cell">{{ dict['引流 (VSD)'] }}</td>
-          <td>引流 (伤口)</td>
-          <td colspan="2" class="cell">{{ dict['引流 (伤口)'] }}</td>
+          <td colspan="2">
+            早空腹+三餐前 <br />
+            +三餐后+睡前
+          </td>
+          <td colspan="2" class="cell">{{ dict['高血压:早空腹+三餐前+三餐后+睡前'] }}</td>
+          <td>心血管疾病</td>
+          <td colspan="3" class="cell">{{ dict['心血管疾病'] }}</td>
+          <td>危机值</td>
+          <td class="cell">{{ dict['危机值'] }}</td>
         </tr>
         <tr>
-          <td>自体血</td>
-          <td colspan="3" class="cell">{{ dict['自体血'] }}</td>
-          <td>免疫吸附</td>
-          <td colspan="3" class="cell">{{ dict['免疫吸附'] }}</td>
-          <td>关节离子</td>
-          <td colspan="2" class="cell">{{ dict['关节离子'] }}</td>
-        </tr>
-        <tr>
-          <td>810</td>
-          <td colspan="3" class="cell">{{ dict['810'] }}</td>
-          <td>痛风脉冲</td>
-          <td colspan="3" class="cell">{{ dict['痛风脉冲'] }}</td>
-          <td>吸氧</td>
-          <td colspan="2" class="cell">{{ dict['吸氧'] }}</td>
-        </tr>
-        <tr>
-          <td>氦氖激光</td>
-          <td colspan="3" class="cell">{{ dict['氦氖激光'] }}</td>
-          <td>中药封包</td>
-          <td colspan="3" class="cell">{{ dict['中药封包'] }}</td>
-          <td>冰敷</td>
-          <td colspan="2" class="cell">{{ dict['冰敷'] }}</td>
+          <td rowspan="2">高血脂</td>
+          <td colspan="4" rowspan="2" class="cell">{{ dict['高血脂'] }}</td>
+          <td rowspan="2">消化系统疾病</td>
+          <td colspan="3" rowspan="2" class="cell">{{ dict['消化系统疾病'] }}</td>
+          <td rowspan="2">特殊</td>
+          <td rowspan="2" class="cell">{{ dict['特殊'] }}</td>
         </tr>
       </tbody>
     </table>
@@ -223,5 +261,7 @@ td {
 }
 .table-title {
   height: 65px;
+  font-size: 45px;
+  font-weight: bold;
 }
 </style>
