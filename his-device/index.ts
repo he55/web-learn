@@ -18,8 +18,9 @@ async function work() {
     const r = await conn.query`INSERT INTO [view_pacs](
     [brxm],[brxb],[brnl],[ksmc]
     ,[ksys],[mzhm],[zyhm],[brch]
-,[jcfy],[jcbw],[jcxm],[jclx]
-,[KDRQ],[hisnum])`
+    ,[jcfy],[jcbw],[jcxm],[jclx]
+    ,[KDRQ],[hisnum])`
+
     console.log(r)
   }
 }
