@@ -1,12 +1,14 @@
 import 'zx/globals'
 
-// usePowerShell();
+const filterList = ['CSBR']
+
+usePowerShell()
 
 main(process.argv.splice(3))
 
 function help() {
-  console.log(`usage: package list
-    update <version> <server>`)
+  console.log(`usage: ux package list
+       ux update <server> <version>`)
 }
 
 /**
@@ -16,7 +18,7 @@ function help() {
 function bin_cmd(subargs) {
   const [c] = subargs
   if (c === 'list') {
-    const bins = fs.globSync('bin/*/')
+    const bins = fs.globSync('packages/*/')
     const vers = bins
       .map((x) => x.split(path.sep)[1])
       .sort((a, b) => b.localeCompare(a))
@@ -32,22 +34,32 @@ function bin_cmd(subargs) {
  *
  * @param {string[]} subargs
  */
-function update_cmd(subargs) {
+async function update_cmd(subargs) {
   if (subargs.length < 2) {
     help()
     return
   }
 
-  const [version, server] = subargs
+  const [server, version] = subargs
 
-  const binPath = `bin/${version}/HISServer.exe`
+  const binPath = path.resolve(`packages/${version}/HISServer.exe`)
   if (!fs.existsSync(binPath)) {
     throw new Error('bin not exists')
   }
 
-  const b = server === 'all' ? '*' : server
+  const pattern = server === 'all' ? '*' : server
 
-  const configFilePaths = fs.globSync(`HISServer_${b}/app.xml`)
+  let configFilePaths = fs.globSync(`HISServer_${pattern}/app.xml`)
+  if (configFilePaths.length === 0) {
+    throw new Error('not found server')
+  }
+
+  if (pattern === '*') {
+    configFilePaths = configFilePaths.filter(
+      (configPath) => !filterList.some((x) => configPath.includes(x))
+    )
+  }
+
   for (const configPath of configFilePaths) {
     const oldConfig = fs.readFileSync(configPath, 'utf8')
     const newConfig = oldConfig.replace(
@@ -58,6 +70,7 @@ function update_cmd(subargs) {
 
     // TODO:
     console.log(`winsw restart ${configPath}`)
+    // await $`winsw restart ${configPath}`
   }
 }
 
@@ -66,7 +79,7 @@ function update_cmd(subargs) {
  * @param {string[]} args
  * @returns
  */
-async function main(args) {
+function main(args) {
   if (args.length === 0) {
     help()
     return
