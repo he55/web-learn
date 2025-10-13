@@ -70,78 +70,68 @@ export type AIResult = {
   msg: string
 }
 
-export const getCheckInfo = (patientId: number) => {
-  return request.get(`/api/ICDDiag/GetCheckInfo?patientId=${patientId}`) as Promise<
-    DentalCheckRecordDto[]
-  >
+export const getCheckInfo = (patientId: number): Promise<DentalCheckRecordDto[]> => {
+  return request.get(`/api/ICDDiag/GetCheckInfo?patientId=${patientId}`)
 }
 
-export const getPatientRegInfo = (patientId: number) => {
-  return request.get(`/api/ICDDiag/GetPatientRegInfo?patientId=${patientId}`) as Promise<
-    MzRegInfoDto[]
-  >
+export const getPatientRegInfo = (patientId: number): Promise<MzRegInfoDto[]> => {
+  return request.get(`/api/ICDDiag/GetPatientRegInfo?patientId=${patientId}`)
 }
 
-export const createNewCheckInfo = (regId: number) => {
-  return request.post(`/api/ICDDiag/CreateNewCheckInfo?regId=${regId}`) as Promise<void>
+export const createNewCheckInfo = (regId: number): Promise<void> => {
+  return request.post(`/api/ICDDiag/CreateNewCheckInfo?regId=${regId}`)
 }
 
-export const getImageByCheckId = (checkId: number) => {
-  return request.get(`/api/ICDDiag/GetImageByCheckId?checkId=${checkId}`) as Promise<CheckImage[]>
+export const getImageByCheckId = (checkId: number): Promise<CheckImage[]> => {
+  return request.get(`/api/ICDDiag/GetImageByCheckId?checkId=${checkId}`)
 }
 
-export const checkAIReportIsExists = (checkId: number) => {
-  return request.get(`/api/ICDDiag/CheckAIReportIsExists?checkId=${checkId}`) as Promise<AIResult>
+export const checkAIReportIsExists = (checkId: number): Promise<AIResult> => {
+  return request.get(`/api/ICDDiag/CheckAIReportIsExists?checkId=${checkId}`)
 }
 
-export const getAIReport = (checkId: number) => {
-  return request.get(`/api/ICDDiag/GetAIReport?checkId=${checkId}`) as Promise<AIReport>
+export const getAIReport = (checkId: number): Promise<AIReport> => {
+  return request.get(`/api/ICDDiag/GetAIReport?checkId=${checkId}`)
 }
 
-export const analyseImage = (fileId: number, checkId: number) => {
-  return request.post(
-    `/api/ICDDiag/AnalyseImage?fileId=${fileId}&checkId=${checkId}`,
-  ) as Promise<void>
+export const analyseImage = (fileId: number, checkId: number): Promise<void> => {
+  return request.post(`/api/ICDDiag/AnalyseImage?fileId=${fileId}&checkId=${checkId}`)
 }
 
-export const getDentalDiag = () => {
-  return request.get('/api/ICDDiag/GetDentalDiag') as Promise<DentalDiagItem[]>
+export const getDentalDiag = (): Promise<DentalDiagItem[]> => {
+  return request.get('/api/ICDDiag/GetDentalDiag')
 }
 
-export const getDentalTreatmentRec = (id: number) => {
-  return request.get(`/api/ICDDiag/GetDentalTreatmentRec?dentalDiagId=${id}`) as Promise<
-    DentalTreatmentItem[]
-  >
+export const getDentalTreatmentRec = (id: number): Promise<DentalTreatmentItem[]> => {
+  return request.get(`/api/ICDDiag/GetDentalTreatmentRec?dentalDiagId=${id}`)
 }
 
-export const getPersonDiagByCheckId = (checkId: number) => {
-  return request.get(`/api/ICDDiag/GetPersonDiagByCheckId?checkId=${checkId}`) as Promise<
-    PersonDiagItem[]
-  >
+export const getPersonDiagByCheckId = (checkId: number): Promise<PersonDiagItem[]> => {
+  return request.get(`/api/ICDDiag/GetPersonDiagByCheckId?checkId=${checkId}`)
 }
 
-export const getPersonICDInfo = (id: number) => {
-  return request.get(`/api/ICDDiag/GetPersonICDInfo?id=${id}`) as Promise<ICDDiagItem[]>
+export const getPersonICDInfo = (id: number): Promise<ICDDiagItem[]> => {
+  return request.get(`/api/ICDDiag/GetPersonICDInfo?id=${id}`)
 }
 
-export const updatePersonICDInfo = (id: number, data: ICDDiagItem[]) => {
-  return request.put(`/api/ICDDiag/UpdatePersonICDInfo?id=${id}`, data) as Promise<void>
+export const updatePersonICDInfo = (id: number, data: ICDDiagItem[]): Promise<void> => {
+  return request.put(`/api/ICDDiag/UpdatePersonICDInfo?id=${id}`, data)
 }
 
-export const getPersonDiag = (id: number) => {
-  return request.get(`/api/ICDDiag/GetPersonDiag?id=${id}`) as Promise<Tooth>
+export const getPersonDiag = (id: number): Promise<Tooth> => {
+  return request.get(`/api/ICDDiag/GetPersonDiag?id=${id}`)
 }
 
-export const deletePersonDiag = (id: number) => {
-  return request.delete(`/api/ICDDiag/DeletePersonDiag?id=${id}`) as Promise<void>
+export const deletePersonDiag = (id: number): Promise<void> => {
+  return request.delete(`/api/ICDDiag/DeletePersonDiag?id=${id}`)
 }
 
-export const batchDeletePersonDiag = (patientId: number, ids: number[]) => {
+export const batchDeletePersonDiag = (patientId: number, ids: number[]): Promise<void> => {
   return request.delete(`/api/ICDDiag/BatchDeletePersonDiag?patientId=${patientId}`, {
     data: ids,
-  }) as Promise<void>
+  })
 }
 
-export const updatePersonDiag = (id: number, data: Tooth) => {
-  return request.put(`/api/ICDDiag/UpdatePersonDiag?id=${id}`, data) as Promise<void>
+export const updatePersonDiag = (id: number, data: Tooth): Promise<void> => {
+  return request.put(`/api/ICDDiag/UpdatePersonDiag?id=${id}`, data)
 }
