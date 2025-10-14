@@ -1,0 +1,5 @@
+{
+  "prefix": "HISServer_",
+  "exec": "HISServer.exe",
+  "exclude": ["TEST"]
+}

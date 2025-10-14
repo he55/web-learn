@@ -1,17 +1,9 @@
 import 'zx/globals'
+import config from './config.json' with { type: 'json' }
 
 usePowerShell()
 
-const excludeList = []
-if (fs.existsSync('.env')) {
-  process.loadEnvFile()
-
-  const serverNames = process.env.EXCLUDE_SERVERS
-  if (serverNames) {
-    const arr = serverNames.split(/ +/)
-    excludeList.push(...arr)
-  }
-}
+const { prefix: serverPrefixName, exec: execName, exclude: excludeServerNames } = config
 
 main(process.argv.splice(3))
 
@@ -51,20 +43,22 @@ async function update_cmd(subargs) {
 
   const [server, version] = subargs
 
-  const binPath = path.resolve(`packages/${version}/HISServer.exe`)
+  const binPath = path.resolve(`packages/${version}/${execName}`)
   if (!fs.existsSync(binPath)) {
     throw new Error('bin not exists')
   }
 
   const pattern = server === 'all' ? '*' : server
 
-  const configFilePaths = fs.globSync(`HISServer_${pattern}/app.xml`)
+  const configFilePaths = fs.globSync(`${serverPrefixName}${pattern}/app.xml`)
   if (configFilePaths.length === 0) {
     throw new Error('not found server')
   }
 
+  const hasItem = excludeServerNames?.length > 0
+
   for (const configPath of configFilePaths) {
-    if (excludeList.some((x) => configPath.includes(x))) {
+    if (hasItem && excludeServerNames.some((x) => configPath.includes(x))) {
       continue
     }
 
