@@ -1,8 +1,0 @@
-<service>
-  <id>App_HIS_TYJK</id>
-  <description>HIS Server.</description>
-  <executable>F:\project\web-learn\his-server-update\packages\4.1\HISServer.exe</executable>
-  <log mode="roll"></log>
-  <stoptimeout>1sec</stoptimeout>
-  <onfailure action="restart" delay="10 sec"/>
-</service>
