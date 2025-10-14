@@ -1,8 +1,17 @@
 import 'zx/globals'
 
-const filterList = ['CSBR']
-
 usePowerShell()
+
+const excludeList = []
+if (fs.existsSync('.env')) {
+  process.loadEnvFile()
+
+  const serverNames = process.env.EXCLUDE_SERVERS
+  if (serverNames) {
+    const arr = serverNames.split(/ +/)
+    excludeList.push(...arr)
+  }
+}
 
 main(process.argv.splice(3))
 
@@ -49,18 +58,16 @@ async function update_cmd(subargs) {
 
   const pattern = server === 'all' ? '*' : server
 
-  let configFilePaths = fs.globSync(`HISServer_${pattern}/app.xml`)
+  const configFilePaths = fs.globSync(`HISServer_${pattern}/app.xml`)
   if (configFilePaths.length === 0) {
     throw new Error('not found server')
   }
 
-  if (pattern === '*') {
-    configFilePaths = configFilePaths.filter(
-      (configPath) => !filterList.some((x) => configPath.includes(x))
-    )
-  }
-
   for (const configPath of configFilePaths) {
+    if (excludeList.some((x) => configPath.includes(x))) {
+      continue
+    }
+
     const oldConfig = fs.readFileSync(configPath, 'utf8')
     const newConfig = oldConfig.replace(
       /<executable>(.+)<\/executable>/i,
@@ -68,9 +75,8 @@ async function update_cmd(subargs) {
     )
     fs.writeFileSync(configPath, newConfig)
 
-    // TODO:
     console.log(`winsw restart ${configPath}`)
-    // await $`winsw restart ${configPath}`
+    await $`winsw restart ${configPath}`
   }
 }
 
