@@ -1,5 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <main>hello world</main>
+  <main>
+    <el-button>Click</el-button>
+  </main>
 </template>

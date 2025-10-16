@@ -1,37 +1,23 @@
 <script setup lang="ts">
+import { getList, type DataItem } from '@/api'
 import { getNowString } from '@/utils'
 import { onMounted, onUnmounted, ref } from 'vue'
-
-type DataItem = {
-  no: number
-  doctor: string
-  patient: string
-  method: string
-  status: string
-}
 
 const time = ref('')
 const list = ref<DataItem[]>([])
 
-const arr: DataItem[] = []
-for (let i = 0; i < 6; i++) {
-  arr.push({
-    no: i,
-    doctor: '刘医生',
-    patient: '张晓红',
-    method: 'S',
-    status: '等待中',
-  })
+const loadData = async () => {
+  time.value = getNowString()
+  try {
+    list.value = await getList()
+  } catch {}
 }
-list.value = arr
 
 let timeInterval: number
 onMounted(() => {
-  time.value = getNowString()
+  loadData()
 
-  timeInterval = setInterval(() => {
-    time.value = getNowString()
-  }, 30_000)
+  timeInterval = setInterval(loadData, 30_000)
 })
 onUnmounted(() => {
   clearInterval(timeInterval)
@@ -41,8 +27,8 @@ onUnmounted(() => {
 <template>
   <div class="container">
     <header>
-      <div>logo</div>
-      <div>家属等待区</div>
+      <div class="logo">郑州痛风风湿病医院</div>
+      <div class="title">家属等待区</div>
       <div class="time">{{ time }}</div>
     </header>
     <main>
@@ -84,14 +70,21 @@ onUnmounted(() => {
 }
 header {
   display: flex;
-  font-size: 50px;
-  text-align: center;
+  align-items: flex-end;
 
-  > div {
+  div {
     flex: 1;
   }
-  > .time {
-    font-size: 30px;
+  .logo {
+    font-size: 40px;
+  }
+  .title {
+    font-size: 60px;
+    text-align: center;
+  }
+  .time {
+    font-size: 35px;
+    text-align: end;
   }
 }
 main {
