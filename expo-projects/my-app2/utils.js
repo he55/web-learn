@@ -34,6 +34,7 @@ export const getConfig = async () => {
 
 export const getData = async (url) => {
   const data = {
+    text1: '',
     text2: '',
     text3: '',
   }
@@ -48,9 +49,14 @@ export const getData = async (url) => {
     return data
   }
 
-  const a = list.find((x) => x.state === 1)
-  if (a) {
-    data.text2 = `${a.number} ${a.name}`
+  const a1 = list.find((x) => x.state === 1 && x.deptAlias === '肌骨超声1')
+  if (a1) {
+    data.text1 = `${a1.number} ${a1.name}`
+  }
+
+  const a2 = list.find((x) => x.state === 1 && x.deptAlias === '肌骨超声2')
+  if (a2) {
+    data.text2 = `${a2.number} ${a2.name}`
   }
 
   /** @type {[]} */

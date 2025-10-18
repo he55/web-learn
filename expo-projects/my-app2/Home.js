@@ -15,9 +15,9 @@ const bgImg = require('./assets/bg.jpg')
 
 export default function Home() {
   const [modalVisible, setModalVisible] = useState(false)
-  const [label1Text, setLabel1Text] = useState('')
-  const [label2Text, setLabel2Text] = useState('')
-  const [label3Text, setLabel3Text] = useState('')
+  const [text1, setText1] = useState('')
+  const [text2, setText2] = useState('')
+  const [text3, setText3] = useState('')
 
   useEffect(() => {
     let config
@@ -25,7 +25,7 @@ export default function Home() {
     let timeoutId2
 
     const getConfigTick = async () => {
-      console.log(new Date(), 'getConfig')
+      console.log(new Date().toLocaleString(), 'getConfig')
       try {
         config = await getConfig()
       } catch (error) {
@@ -39,17 +39,20 @@ export default function Home() {
     getConfigTick()
 
     const getDataTick = async () => {
-      console.log(new Date(), 'getData')
       try {
         if (config) {
+          console.log(new Date().toLocaleString(), 'getData')
           const data = await getData(config.dataUrl)
-          setLabel2Text(data.text2)
-          setLabel3Text(data.text3)
+          setText1(data.text1)
+          setText2(data.text2)
+          setText3(data.text3)
         }
       } catch (error) {
-        console.log(error)
-        setLabel2Text('')
-        setLabel3Text('')
+        console.error(error)
+
+        setText1('')
+        setText2('')
+        setText3('')
       }
       timeoutId = setTimeout(getDataTick, 5_000)
     }
@@ -73,12 +76,12 @@ export default function Home() {
       <ImageBackground source={bgImg} style={styles.img}>
         <View style={styles.container}>
           <Text style={[styles.text, styles.label1]}>肌骨超声1</Text>
-          <Text style={[styles.text, styles.text1]}>张山</Text>
+          <Text style={[styles.text, styles.text1]}>{text1}</Text>
           <Text style={[styles.text, styles.label2]}>肌骨超声2</Text>
-          <Text style={[styles.text, styles.text2]}>里斯</Text>
+          <Text style={[styles.text, styles.text2]}>{text2}</Text>
 
           <Text style={[styles.text, styles.text3]} onPress={() => setModalVisible(true)}>
-            王小明
+            {text3}
           </Text>
         </View>
       </ImageBackground>
@@ -108,6 +111,7 @@ const styles = StyleSheet.create({
   text1: {
     height: 140,
     marginTop: 5,
+    color: '#f39801',
     fontSize: 70,
   },
   label2: {
@@ -117,11 +121,13 @@ const styles = StyleSheet.create({
   text2: {
     height: 140,
     marginTop: 5,
+    color: '#f39801',
     fontSize: 70,
   },
   text3: {
     height: 820,
     marginTop: 185,
     alignContent: 'flex-start',
+    lineHeight: 140,
   },
 })
