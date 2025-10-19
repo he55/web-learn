@@ -1,5 +1,5 @@
 export type DataItem = {
-  no: number
+  id: number
   doctor: string
   patient: string
   method: string

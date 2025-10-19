@@ -43,8 +43,8 @@ onUnmounted(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in list" :key="item.no">
-            <td>{{ item.no }}</td>
+          <tr v-for="item in list" :key="item.id">
+            <td>{{ item.id }}</td>
             <td>{{ item.doctor }}</td>
             <td>{{ item.patient }}</td>
             <td>{{ item.method }}</td>
