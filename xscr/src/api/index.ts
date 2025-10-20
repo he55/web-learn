@@ -4,6 +4,7 @@ export type DataItem = {
   patient: string
   method: string
   status: string
+  created_at: string
 }
 
 export const getList = async () => {
