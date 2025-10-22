@@ -1,3 +1,5 @@
+import axios from 'axios'
+
 export type DataItem = {
   id: number
   doctor: string
@@ -7,8 +9,15 @@ export type DataItem = {
   created_at: string
 }
 
-export const getList = async () => {
-  const res = await fetch('/api/getList.json')
-  const list: DataItem[] = await res.json()
-  return list
+const instance = axios.create({
+  baseURL: '',
+  timeout: 5_000,
+})
+
+instance.interceptors.response.use((response) => {
+  return response.data
+})
+
+export const getList = async (): Promise<DataItem[]> => {
+  return instance.get('/api/getList.json')
 }

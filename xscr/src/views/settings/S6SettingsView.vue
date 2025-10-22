@@ -71,6 +71,12 @@ const submitForm = async () => {
   dialogFormVisible.value = false
 }
 const openDialog = () => {
+  formData.value = {
+    doctor: '',
+    patient: '',
+    method: '',
+    status: 0,
+  }
   mode = 'add'
   dialogFormVisible.value = true
 }
@@ -78,7 +84,6 @@ const closeDialog = () => {
   dialogFormVisible.value = false
 }
 const resetForm = () => {
-  console.log('123')
   formRef.value?.resetFields()
 }
 
