@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getList, type DataItem } from '@/api'
-import { getNowString } from '@/utils'
+import { getNowString, statusFormat } from '@/utils'
 import { onMounted, onUnmounted, ref } from 'vue'
 
 const time = ref('')
@@ -48,7 +48,9 @@ onUnmounted(() => {
             <td>{{ item.doctor }}</td>
             <td>{{ item.patient }}</td>
             <td>{{ item.method }}</td>
-            <td>{{ item.status }}</td>
+            <td :style="{ color: item.status === 0 ? '#3498db' : 'red' }" style="font-weight: bold">
+              {{ statusFormat(item.status) }}
+            </td>
           </tr>
         </tbody>
       </table>
@@ -71,6 +73,7 @@ onUnmounted(() => {
 header {
   display: flex;
   align-items: flex-end;
+  padding: 0 15px;
 
   div {
     flex: 1;

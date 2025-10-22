@@ -4,15 +4,15 @@
     "doctor": "刘医生",
     "patient": "张晓红",
     "method": "S",
-    "status": "等待中",
-    "created_at": "2025-10-20T10:25:35"
+    "status": 0,
+    "created_at": "2025-10-20T10:25:35.891"
   },
   {
     "id": 2,
     "doctor": "张医生",
     "patient": "张晓红",
     "method": "S",
-    "status": "等待中",
+    "status": 1,
     "created_at": "2025-10-20T10:25:35"
   },
   {
@@ -20,7 +20,7 @@
     "doctor": "刘医生",
     "patient": "张晓红",
     "method": "S",
-    "status": "等待中",
+    "status": 2,
     "created_at": "2025-10-20T10:25:35"
   },
   {
@@ -28,7 +28,7 @@
     "doctor": "刘医生",
     "patient": "张晓红",
     "method": "S",
-    "status": "等待中",
+    "status": 0,
     "created_at": "2025-10-20T10:25:35"
   },
   {
@@ -36,7 +36,7 @@
     "doctor": "刘医生",
     "patient": "张晓红",
     "method": "S",
-    "status": "等待中",
+    "status": 0,
     "created_at": "2025-10-20T10:25:35"
   },
   {
@@ -44,7 +44,7 @@
     "doctor": "刘医生",
     "patient": "张晓红",
     "method": "S",
-    "status": "等待中",
+    "status": 0,
     "created_at": "2025-10-20T10:25:35"
   },
   {
@@ -52,7 +52,7 @@
     "doctor": "刘医生",
     "patient": "张晓红",
     "method": "S",
-    "status": "等待中",
+    "status": 0,
     "created_at": "2025-10-20T10:25:35"
   }
 ]

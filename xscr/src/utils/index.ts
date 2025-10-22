@@ -6,3 +6,19 @@ export const getNowString = () => {
   const dayName = dayNames[day]!
   return `${a} ${dayName}`
 }
+
+export const statusFormat = (status: number) => {
+  if (status === 0) {
+    return '等待中'
+  } else if (status === 1) {
+    return '手术中'
+  } else if (status === 2) {
+    return '完成'
+  } else {
+    return ''
+  }
+}
+
+export const dateFormat = (date: string) => {
+  return date.slice(0, 19).replace('T', ' ')
+}

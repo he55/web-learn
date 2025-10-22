@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getList, type DataItem } from '@/api'
+import { dateFormat, statusFormat } from '@/utils'
 import { ElMessage, ElMessageBox, type FormRules } from 'element-plus'
 import { onMounted, reactive, ref, useTemplateRef } from 'vue'
 
@@ -67,7 +68,7 @@ const submitForm = async () => {
     console.log('update')
     ElMessage.success('保存成功')
   }
-  closeDialog()
+  dialogFormVisible.value = false
 }
 const openDialog = () => {
   mode = 'add'
@@ -75,6 +76,9 @@ const openDialog = () => {
 }
 const closeDialog = () => {
   dialogFormVisible.value = false
+}
+const resetForm = () => {
+  console.log('123')
   formRef.value?.resetFields()
 }
 
@@ -84,7 +88,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <el-dialog v-model="dialogFormVisible" title="添加手术" width="500">
+  <el-dialog
+    v-model="dialogFormVisible"
+    :close-on-click-modal="false"
+    @closed="resetForm"
+    title="添加手术"
+    width="500"
+  >
     <el-form ref="formRef" :model="formData" :rules="rules" label-width="auto">
       <el-form-item label="手术医生" prop="doctor">
         <el-input v-model="formData.doctor" />
@@ -114,13 +124,23 @@ onMounted(() => {
   </el-tabs>
   <el-button type="primary" :disabled="activeName !== 'tab1'" @click="openDialog">添加</el-button>
   <el-table :data="tableData" stripe border>
-    <el-table-column prop="id" label="编号" width="100" />
-    <el-table-column prop="doctor" label="手术医生" width="100" />
-    <el-table-column prop="patient" label="病人姓名" width="100" />
-    <el-table-column prop="method" label="麻醉方式" width="100" />
-    <el-table-column prop="status" label="状态" width="100" />
-    <el-table-column prop="created_at" label="创建时间" width="180" />
-    <el-table-column label="操作" width="150" fixed="right">
+    <el-table-column prop="id" label="编号" min-width="100" />
+    <el-table-column prop="doctor" label="手术医生" min-width="100" />
+    <el-table-column prop="patient" label="病人姓名" min-width="100" />
+    <el-table-column prop="method" label="麻醉方式" min-width="100" />
+    <el-table-column
+      prop="status"
+      label="状态"
+      min-width="100"
+      :formatter="(row: DataItem) => statusFormat(row.status)"
+    />
+    <el-table-column
+      prop="created_at"
+      label="创建时间"
+      min-width="180"
+      :formatter="(row: DataItem) => dateFormat(row.created_at)"
+    />
+    <el-table-column label="操作" min-width="150" fixed="right">
       <template #default="{ row }: ColumnDataType">
         <el-button type="primary" size="small" @click="updateItem(row)">修改</el-button>
         <el-button type="danger" size="small" @click="deleteItem(row.id)">删除</el-button>

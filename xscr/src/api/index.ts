@@ -3,7 +3,7 @@ export type DataItem = {
   doctor: string
   patient: string
   method: string
-  status: string
+  status: number
   created_at: string
 }
 
