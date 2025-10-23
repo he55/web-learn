@@ -4,7 +4,7 @@ export type DataItem = {
   patient: string;
   method: string;
   status: number;
-  created_at: string;
+  created_at: number;
 };
 
 export type DataItemDto = Omit<DataItem, "id" | "created_at">;
