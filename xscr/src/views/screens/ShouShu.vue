@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { getList, type DataItem } from '@/api'
+import { getList } from '@/api'
+import type { DataItem } from '@/types'
 import { getNowString, statusFormat } from '@/utils'
 import { onMounted, onUnmounted, ref } from 'vue'
 
@@ -9,7 +10,7 @@ const list = ref<DataItem[]>([])
 const loadData = async () => {
   time.value = getNowString()
   try {
-    list.value = await getList()
+    list.value = await getList('0')
   } catch {}
 }
 

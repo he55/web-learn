@@ -1,16 +1,12 @@
 <script setup lang="ts">
-import { getList, type DataItem } from '@/api'
+import { addData, deleteData, getList, updateData } from '@/api'
+import type { DataItem, FormDataType } from '@/types'
 import { dateFormat, statusFormat } from '@/utils'
 import { ElMessage, ElMessageBox, type FormRules } from 'element-plus'
 import { onMounted, reactive, ref, useTemplateRef } from 'vue'
 
 type TabName = 'tab1' | 'tab2'
-type FormDataType = {
-  doctor: string
-  patient: string
-  method: string
-  status: number
-}
+
 type ColumnDataType = { row: DataItem }
 
 let mode: 'add' | 'update' = 'add'
@@ -33,16 +29,16 @@ const rules = reactive<FormRules<FormDataType>>({
 })
 const tableData = ref<DataItem[]>([])
 
-const tabChange = async (name: TabName) => {
-  let list = await getList()
+const reloadData = async () => {
+  const name: TabName = activeName.value
+
+  let type = ''
   if (name === 'tab1') {
-    list = list.slice(0, 3)
+    type = '0'
   } else if (name === 'tab2') {
-    list = list.slice(3, 6)
-  } else {
-    list = []
+    type = '1'
   }
-  tableData.value = list
+  tableData.value = await getList(type)
 }
 
 const updateItem = (row: DataItem) => {
@@ -51,24 +47,25 @@ const updateItem = (row: DataItem) => {
   dialogFormVisible.value = true
 }
 const deleteItem = async (id: number) => {
-  console.log(id)
   await ElMessageBox.confirm('确认删除', '提示', {
     type: 'warning',
   })
-  // TODO: fetch api
+  await deleteData(id)
   ElMessage.success('删除成功')
 }
 
 const submitForm = async () => {
   await formRef.value?.validate()
   if (mode === 'add') {
-    console.log('add')
+    await addData(formData.value)
     ElMessage.success('创建成功')
   } else {
-    console.log('update')
+    const d = formData.value
+    await updateData(d.id, d)
     ElMessage.success('保存成功')
   }
   dialogFormVisible.value = false
+  await reloadData()
 }
 const openDialog = () => {
   formData.value = {
@@ -88,7 +85,7 @@ const resetForm = () => {
 }
 
 onMounted(() => {
-  tabChange(activeName.value)
+  reloadData()
 })
 </script>
 
@@ -123,7 +120,7 @@ onMounted(() => {
       </el-form-item>
     </el-form>
   </el-dialog>
-  <el-tabs v-model="activeName" @tab-change="tabChange">
+  <el-tabs v-model="activeName" @tab-change="reloadData">
     <el-tab-pane name="tab1" label="未完成"> </el-tab-pane>
     <el-tab-pane name="tab2" label="已完成"></el-tab-pane>
   </el-tabs>

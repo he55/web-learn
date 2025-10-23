@@ -19,6 +19,7 @@ export const statusFormat = (status: number) => {
   }
 }
 
-export const dateFormat = (date: string) => {
-  return date.slice(0, 19).replace('T', ' ')
+export const dateFormat = (timestamp: number) => {
+  const date = new Date(timestamp)
+  return date.toLocaleString()
 }
