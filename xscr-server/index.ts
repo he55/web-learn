@@ -8,7 +8,7 @@ await sql`
     patient TEXT NOT NULL,
     method TEXT NOT NULL,
     status INTEGER NOT NULL,
-    created_at INTEGER NOT NULL
+    created_at TEXT NOT NULL DEFAULT current_timestamp
   )
 `;
 
@@ -21,9 +21,7 @@ const server = Bun.serve({
 
         let c = sql``;
         if (type === "0") {
-          c = sql`WHERE status IN (0,1)`;
-        } else if (type === "1") {
-          c = sql`WHERE status = 2`;
+          c = sql`WHERE datetime(created_at, 'localtime') > date('now', 'localtime') AND status IN (0,1)`;
         }
 
         const list: DataItem[] = await sql`SELECT * FROM posts ${c}`;
@@ -32,12 +30,11 @@ const server = Bun.serve({
       POST: async (req) => {
         const post = <DataItemDto>await req.json();
 
-        const obj: DataItem = {
+        const obj: DataItemDto = {
           doctor: post.doctor,
           patient: post.patient,
           method: post.method,
           status: post.status,
-          created_at: Date.now(),
         };
 
         await sql`INSERT INTO posts ${sql(obj)}`;
@@ -57,7 +54,7 @@ const server = Bun.serve({
       },
       PUT: async (req) => {
         const id = req.params.id;
-        const [post1] = await sql`SELECT * FROM posts WHERE id = ${id}`;
+        const [post1] = await sql`SELECT count(1) FROM posts WHERE id = ${id}`;
 
         if (!post1) {
           return new Response("Not Found", { status: 500 });
