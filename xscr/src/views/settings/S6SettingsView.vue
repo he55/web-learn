@@ -36,7 +36,7 @@ const reloadData = async () => {
   if (name === 'tab1') {
     type = '0'
   } else if (name === 'tab2') {
-    type = '1'
+    type = ''
   }
   tableData.value = await getList(type)
 }
@@ -51,6 +51,7 @@ const deleteItem = async (id: number) => {
     type: 'warning',
   })
   await deleteData(id)
+  await reloadData()
   ElMessage.success('删除成功')
 }
 
@@ -122,7 +123,7 @@ onMounted(() => {
   </el-dialog>
   <el-tabs v-model="activeName" @tab-change="reloadData">
     <el-tab-pane name="tab1" label="未完成"> </el-tab-pane>
-    <el-tab-pane name="tab2" label="已完成"></el-tab-pane>
+    <el-tab-pane name="tab2" label="全部"></el-tab-pane>
   </el-tabs>
   <el-button type="primary" :disabled="activeName !== 'tab1'" @click="openDialog">添加</el-button>
   <el-table :data="tableData" stripe border>

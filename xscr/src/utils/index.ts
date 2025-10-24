@@ -21,5 +21,6 @@ export const statusFormat = (status: number) => {
 
 export const dateFormat = (timestamp: number) => {
   const date = new Date(timestamp)
+  date.setHours(date.getHours() + 8)
   return date.toLocaleString()
 }
