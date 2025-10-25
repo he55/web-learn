@@ -10,6 +10,10 @@ const _url = (path) => {
     base = base.replace('/api/dashboard', '/api/dashboard2')
   } else if (org === 'gyqzfs') {
     base = base.replace('/api/dashboard', '/api/dashboard3')
+  } else if (org === 'zztffs3') {
+    base = base.replace('/api/dashboard', '/api/dashboard_z3')
+  } else if (org === 'zztffs4') {
+    base = base.replace('/api/dashboard', '/api/dashboard_z4')
   }
   return base
 }

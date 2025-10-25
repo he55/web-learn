@@ -25,6 +25,10 @@ const router = createRouter({
       path: '/gyqzfs',
       component: HomeView_gyqzfs,
     },
+    {
+      path: '/zztffs',
+      component: () => import('@/views/zztffs/HomeView.vue'),
+    },
   ],
 })
 
