@@ -24,3 +24,18 @@ export const dateFormat = (timestamp: number) => {
   date.setHours(date.getHours() + 8)
   return date.toLocaleString()
 }
+
+export const nameFix = (str: string) => {
+  if (str.length < 2) {
+    return str
+  }
+
+  const s = str.at(0)
+  if (str.length === 2) {
+    return `${s}*`
+  }
+
+  const e = str.at(-1)
+  const stars = '*'.repeat(str.length - 2)
+  return `${s}${stars}${e}`
+}

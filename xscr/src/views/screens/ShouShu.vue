@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { getList } from '@/api'
 import type { DataItem } from '@/types'
-import { getNowString, statusFormat } from '@/utils'
+import { getNowString, nameFix, statusFormat } from '@/utils'
 import { onMounted, onUnmounted, ref } from 'vue'
 
 const time = ref('')
@@ -18,7 +18,7 @@ let timeInterval: number
 onMounted(() => {
   loadData()
 
-  timeInterval = setInterval(loadData, 30_000)
+  timeInterval = setInterval(loadData, 15_000)
 })
 onUnmounted(() => {
   clearInterval(timeInterval)
@@ -44,10 +44,10 @@ onUnmounted(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in list" :key="item.id">
-            <td>{{ item.id }}</td>
+          <tr v-for="(item, index) in list" :key="item.id">
+            <td>{{ index + 1 }}</td>
             <td>{{ item.doctor }}</td>
-            <td>{{ item.patient }}</td>
+            <td>{{ nameFix(item.patient) }}</td>
             <td>{{ item.method }}</td>
             <td :style="{ color: item.status === 0 ? '#3498db' : 'red' }" style="font-weight: bold">
               {{ statusFormat(item.status) }}

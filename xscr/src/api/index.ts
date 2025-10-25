@@ -2,6 +2,7 @@ import type { DataItem, FormDataType } from '@/types'
 import axios from 'axios'
 
 const instance = axios.create({
+  baseURL: import.meta.env.DEV ? '' : import.meta.env.BASE_URL,
   timeout: 5_000,
 })
 
