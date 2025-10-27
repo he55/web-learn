@@ -21,10 +21,10 @@ const server = Bun.serve({
 
         let c = sql``;
         if (type === "0") {
-          c = sql`WHERE datetime(created_at, 'localtime') > date('now', 'localtime') AND status IN (0,1)`;
+          c = sql` AND status IN (0,1)`;
         }
 
-        const list: DataItem[] = await sql`SELECT * FROM posts ${c}`;
+        const list: DataItem[] = await sql`SELECT * FROM posts WHERE datetime(created_at, 'localtime') > date('now', 'localtime') ${c}`;
         return Response.json(list);
       },
       POST: async (req) => {
