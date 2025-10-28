@@ -15,7 +15,7 @@ export default defineConfig({
   base: 'xscr',
   server: {
     proxy: {
-      '/api': 'http://localhost:3000',
+      '/api': 'http://localhost:3001',
     },
   },
 })
