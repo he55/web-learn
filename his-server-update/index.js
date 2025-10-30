@@ -1,11 +1,11 @@
-import 'zx/globals'
+import { $ } from 'bun'
+import fs from 'node:fs'
+import path from 'node:path'
 import config from './config.json' with { type: 'json' }
-
-usePowerShell()
 
 const { prefix: serverPrefixName, exec: execName, exclude: excludeServerNames } = config
 
-main(process.argv.splice(3))
+main(process.argv.splice(2))
 
 function help() {
   console.log(`usage: ux package list
