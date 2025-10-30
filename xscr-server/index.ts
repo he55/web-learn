@@ -1,5 +1,6 @@
 import { sql } from "bun";
-import type { DataItem, DataItemDto } from "./types";
+import { z } from "zod";
+import type { DataItem } from "./types";
 
 await sql`
   CREATE TABLE IF NOT EXISTS posts (
@@ -11,6 +12,15 @@ await sql`
     created_at TEXT NOT NULL DEFAULT current_timestamp
   )
 `;
+
+const IdSchema = z.coerce.number();
+
+const PostSchema = z.object({
+  doctor: z.string(),
+  patient: z.string(),
+  method: z.string(),
+  status: z.number(),
+});
 
 const server = Bun.serve({
   routes: {
@@ -24,28 +34,23 @@ const server = Bun.serve({
           c = sql` AND status IN (0,1)`;
         }
 
-        const list: DataItem[] = await sql`SELECT * FROM posts WHERE datetime(created_at, 'localtime') > date('now', 'localtime') ${c}`;
+        const list: DataItem[] =
+          await sql`SELECT * FROM posts WHERE datetime(created_at, 'localtime') > date('now', 'localtime') ${c}`;
         return Response.json(list);
       },
       POST: async (req) => {
-        const post = <DataItemDto>await req.json();
+        const obj = await req.json();
+        const dto = PostSchema.parse(obj);
 
-        const obj: DataItemDto = {
-          doctor: post.doctor,
-          patient: post.patient,
-          method: post.method,
-          status: post.status,
-        };
-
-        await sql`INSERT INTO posts ${sql(obj)}`;
+        await sql`INSERT INTO posts ${sql(dto)}`;
         return new Response(null, { status: 204 });
       },
     },
     "/api/posts/:id": {
       GET: async (req) => {
-        const id = req.params.id;
-        const [post] = await sql`SELECT * FROM posts WHERE id = ${id}`;
+        const id = IdSchema.parse(req.params.id);
 
+        const [post] = await sql`SELECT * FROM posts WHERE id = ${id}`;
         if (!post) {
           return new Response("Not Found", { status: 404 });
         }
@@ -53,28 +58,22 @@ const server = Bun.serve({
         return Response.json(post);
       },
       PUT: async (req) => {
-        const id = req.params.id;
-        const [post1] = await sql`SELECT count(1) FROM posts WHERE id = ${id}`;
+        const id = IdSchema.parse(req.params.id);
 
-        if (!post1) {
+        const obj = await req.json();
+        const dto = PostSchema.parse(obj);
+
+        const [a] = await sql`SELECT count(1) FROM posts WHERE id = ${id}`;
+        if (!a) {
           return new Response("Not Found", { status: 500 });
         }
 
-        const post = <DataItemDto>await req.json();
-
-        const obj: DataItemDto = {
-          doctor: post.doctor,
-          patient: post.patient,
-          method: post.method,
-          status: post.status,
-        };
-
-        await sql`UPDATE posts SET ${sql(obj)} WHERE id = ${id}`;
+        await sql`UPDATE posts SET ${sql(dto)} WHERE id = ${id}`;
 
         return new Response(null, { status: 204 });
       },
       DELETE: async (req) => {
-        const id = req.params.id;
+        const id = IdSchema.parse(req.params.id);
 
         await sql`DELETE FROM posts WHERE id = ${id}`;
 
