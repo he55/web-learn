@@ -70,7 +70,7 @@ async function update_cmd(subargs) {
     fs.writeFileSync(configPath, newConfig)
 
     console.log(`winsw restart ${configPath}`)
-    await $`winsw restart ${configPath}`
+    await $`winsw restart ${configPath}`.quiet()
   }
 }
 
