@@ -18,4 +18,16 @@ export default defineConfig({
       '/api': 'http://localhost:3001',
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            return 'vendor'
+          }
+          return null
+        },
+      },
+    },
+  },
 })
