@@ -12,7 +12,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  base: 'xscr',
+  base: '/xscr',
   server: {
     proxy: {
       '/api': 'http://localhost:3001',
