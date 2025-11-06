@@ -1,7 +1,7 @@
 import { $ } from 'bun'
 import fs from 'node:fs'
 import path from 'node:path'
-import config from './config.json' with { type: 'json' }
+import config from './config.json' // with { type: 'json' }
 
 const { prefix: serverPrefixName, exec: execName, exclude: excludeServerNames } = config
 
@@ -12,16 +12,12 @@ function help() {
        ux update <server> <version>`)
 }
 
-/**
- *
- * @param {string[]} subargs
- */
-function bin_cmd(subargs) {
+function bin_cmd(subargs: string[]) {
   const [c] = subargs
   if (c === 'list') {
     const bins = fs.globSync('packages/*/')
     const vers = bins
-      .map((x) => x.split(path.sep)[1])
+      .map((x) => x.split(path.sep).at(1)!)
       .sort((a, b) => b.localeCompare(a))
       .join('  ')
     console.log('packages:')
@@ -31,11 +27,7 @@ function bin_cmd(subargs) {
   }
 }
 
-/**
- *
- * @param {string[]} subargs
- */
-async function update_cmd(subargs) {
+async function update_cmd(subargs: string[]) {
   if (subargs.length < 2) {
     help()
     return
@@ -74,12 +66,7 @@ async function update_cmd(subargs) {
   }
 }
 
-/**
- *
- * @param {string[]} args
- * @returns
- */
-function main(args) {
+function main(args: string[]) {
   if (args.length === 0) {
     help()
     return
