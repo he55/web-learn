@@ -1,0 +1,52 @@
+[
+  {
+    "type": "tcp",
+    "name": "HIS_TEST",
+    "address": "his.njbsbdf.com:9089"
+  },
+  {
+    "type": "tcp",
+    "name": "HIS_CSBR",
+    "address": "his.njbsbdf.com:9090"
+  },
+  {
+    "type": "tcp",
+    "name": "HIS_NJFS",
+    "address": "njfs.njbsbdf.com:9091"
+  },
+  {
+    "type": "tcp",
+    "name": "HIS_HEBFS",
+    "address": "his.njbsbdf.com:9092"
+  },
+  {
+    "type": "tcp",
+    "name": "HIS_HEBTJ",
+    "address": "his.njbsbdf.com:9093"
+  },
+  {
+    "type": "tcp",
+    "name": "HIS_KMBGFS",
+    "address": "his.njbsbdf.com:9095"
+  },
+  {
+    "type": "tcp",
+    "name": "HIS_TYJK",
+    "address": "his.njbsbdf.com:9096"
+  },
+  {
+    "type": "tcp",
+    "name": "HIS_GZBDF",
+    "address": "his.njbsbdf.com:9099"
+  },
+  {
+    "type": "http",
+    "name": "ERP",
+    "address": "https://erp.bsbdf.com:10009/health_check"
+  },
+  {
+    "type": "http",
+    "name": "WJDC",
+    "address": "https://app.njbssoft.com/health_check"
+  }
+]
