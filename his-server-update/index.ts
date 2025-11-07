@@ -3,13 +3,44 @@ import fs from 'node:fs'
 import path from 'node:path'
 import config from './config.json' // with { type: 'json' }
 
+type UxCommand = 'package' | 'update' | 'help'
+type WinswCommand = 'install' | 'uninstall' | 'start' | 'stop' | 'restart'
+type AppCommand = UxCommand | WinswCommand
+
 const { prefix: serverPrefixName, exec: execName, exclude: excludeServerNames } = config
 
 main(process.argv.splice(2))
 
+function getServerFiles(serverName: string) {
+  const pattern = serverName === 'all' ? '*' : serverName
+
+  let configFilePaths = fs.globSync(`${serverPrefixName}${pattern}/app.xml`)
+  if (configFilePaths.length === 0) {
+    throw new Error('not found server')
+  }
+
+  if (pattern !== '*') {
+    return configFilePaths
+  }
+
+  if (!excludeServerNames.length) {
+    return configFilePaths
+  }
+
+  configFilePaths = configFilePaths.filter((x) => !excludeServerNames.some((y) => x.includes(y)))
+
+  if (configFilePaths.length === 0) {
+    throw new Error('not found server')
+  }
+
+  return configFilePaths
+}
+
 function help() {
   console.log(`usage: ux package list
        ux update <server> <version>
+       ux install <server>
+       ux uninstall <server>
        ux start <server>
        ux stop <server>
        ux restart <server>`)
@@ -28,26 +59,6 @@ function package_cmd(subargs: string[]) {
   } else {
     help()
   }
-}
-
-function getServerFiles(serverName: string) {
-  const pattern = serverName === 'all' ? '*' : serverName
-
-  let configFilePaths = fs.globSync(`${serverPrefixName}${pattern}/app.xml`)
-  if (configFilePaths.length === 0) {
-    throw new Error('not found server')
-  }
-
-  const hasItem = excludeServerNames?.length > 0
-  if (hasItem) {
-    configFilePaths = configFilePaths.filter((x) => !excludeServerNames.some((y) => x.includes(y)))
-
-    if (configFilePaths.length === 0) {
-      throw new Error('not found server')
-    }
-  }
-
-  return configFilePaths
 }
 
 async function update_cmd(subargs: string[]) {
@@ -78,9 +89,7 @@ async function update_cmd(subargs: string[]) {
   }
 }
 
-type WinswCmd = 'start' | 'stop' | 'restart'
-
-async function winsw_cmd(subargs: string[], cmd: WinswCmd) {
+async function winsw_cmd(subargs: string[], cmd: WinswCommand) {
   const [server] = subargs
   if (!server) {
     help()
@@ -91,7 +100,7 @@ async function winsw_cmd(subargs: string[], cmd: WinswCmd) {
 
   for (const configPath of configFilePaths) {
     console.log(`winsw ${cmd} ${configPath}`)
-    await $`winsw ${cmd} ${configPath}`.quiet()
+    await $`winsw ${cmd} ${configPath}`
   }
 }
 
@@ -102,19 +111,25 @@ function main(args: string[]) {
   }
 
   const [subcmd, ...subargs] = args
-  if (subcmd === 'help') {
-    help()
-  } else if (subcmd === 'package') {
-    package_cmd(subargs)
-  } else if (subcmd === 'update') {
-    update_cmd(subargs)
-  } else if (subcmd === 'start') {
-    winsw_cmd(subargs, 'start')
-  } else if (subcmd === 'stop') {
-    winsw_cmd(subargs, 'stop')
-  } else if (subcmd === 'restart') {
-    winsw_cmd(subargs, 'restart')
-  } else {
-    help()
+  switch (subcmd as AppCommand) {
+    case 'package':
+      package_cmd(subargs)
+      break
+    case 'update':
+      update_cmd(subargs)
+      break
+    case 'help':
+      help()
+      break
+    case 'install':
+    case 'uninstall':
+    case 'start':
+    case 'stop':
+    case 'restart':
+      winsw_cmd(subargs, subcmd as WinswCommand)
+      break
+    default:
+      help()
+      break
   }
 }
