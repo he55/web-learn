@@ -7,14 +7,22 @@ type Service = {
   address: string;
 };
 
-for (const element of services) {
-  if (element.type === "tcp") {
-    await sendTcp(element);
-    await sleep(3_000)
-  } else if (element.type === "http") {
-    await sendHttp(element);
+main();
+
+async function main() {
+  for (const element of services) {
+    try {
+      if (element.type === "tcp") {
+        const result = await sendTcp(element);
+        console.log(result.toString());
+      } else if (element.type === "http") {
+        await sendHttp(element);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    await sleep(3_000);
   }
-  // break;
 }
 
 async function sendHttp(service: Service) {
@@ -23,8 +31,17 @@ async function sendHttp(service: Service) {
   console.log(service.name, ":", text);
 }
 
+const buf1 = Uint8Array.fromBase64(
+  "Lk5FVAEAAAAAAHMAAAAEAAEBKQAAAHRjcDovL2hpcy5uamJzYmRmLmNvbTo5MDg5L0lIZWFsdGhTZXJ2aWNlBgABARgAAABhcHBsaWNhdGlvbi9vY3RldC1zdHJlYW0AAA=="
+);
+const buf2 = Uint8Array.fromBase64(
+  "AAAAAAAAAAAAAQAAAAAAAAAVEQAAABIEUGluZxJUSElTQXBpLklIZWFsdGhTZXJ2aWNlLCBISVNBcGksIFZlcnNpb249MS4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1udWxsCw=="
+);
+
 async function sendTcp(service: Service) {
   const [host, port] = service.address.split(":");
+
+  const { promise, resolve, reject } = Promise.withResolvers<Buffer>();
 
   const socket = await connect({
     hostname: host!,
@@ -32,34 +49,37 @@ async function sendTcp(service: Service) {
 
     socket: {
       data(socket, data) {
-        console.log(data);
-        console.log(data.toString())
-        // socket.close()
+        console.log("data");
+        resolve(data);
+        socket.close();
       },
       open(socket) {
         console.log("open");
+        socket.write(buf1);
+        socket.write(buf2);
       },
       close(socket, error) {
         console.log("close");
       },
       drain(socket) {},
-      error(socket, error) {},
+      error(socket, error) {
+        console.log("error");
+        reject(error);
+      },
 
       // client-specific handlers
       connectError(socket, error) {}, // connection failed
-      end(socket) {}, // connection closed by server
-      timeout(socket) {}, // connection timed out
+      end(socket) {
+        console.log("end");
+      }, // connection closed by server
+      timeout(socket) {
+        console.log("timeout");
+        reject(new Error("timeout"));
+      }, // connection timed out
     },
   });
 
-  socket.write(
-    Uint8Array.fromBase64(
-      "Lk5FVAEAAAAAAHMAAAAEAAEBKQAAAHRjcDovL2hpcy5uamJzYmRmLmNvbTo5MDg5L0lIZWFsdGhTZXJ2aWNlBgABARgAAABhcHBsaWNhdGlvbi9vY3RldC1zdHJlYW0AAA=="
-    )
-  );
-  socket.write(
-    Uint8Array.fromBase64(
-      "AAAAAAAAAAAAAQAAAAAAAAAVEQAAABIEUGluZxJUSElTQXBpLklIZWFsdGhTZXJ2aWNlLCBISVNBcGksIFZlcnNpb249MS4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1udWxsCw=="
-    )
-  );
+  socket.timeout(8_000);
+
+  return promise;
 }
