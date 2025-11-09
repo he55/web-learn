@@ -43,15 +43,36 @@ async function sendTcp(service: Service) {
 
   const { promise, resolve, reject } = Promise.withResolvers<Buffer>();
 
-  const socket = await connect({
+  type UserData = {
+    length: number;
+    receivedBytes: number;
+    buffers: Buffer[];
+  };
+
+  const socket = await connect<UserData>({
     hostname: host!,
     port: Number(port),
+    data: { length: 0, receivedBytes: 0, buffers: [] },
 
     socket: {
       data(socket, data) {
         console.log("data");
-        resolve(data);
-        socket.close();
+
+        const udata = socket.data;
+        udata.receivedBytes += data.length;
+        udata.buffers.push(data);
+
+        if (!udata.length) {
+          udata.length = data.readInt16LE(0xa) + 16;
+        }
+
+        if (udata.receivedBytes >= 16 && udata.receivedBytes >= udata.length) {
+          const newBuf = Buffer.concat(udata.buffers);
+          const dLen = newBuf.readInt8(0x27);
+          const dData = newBuf.subarray(0x28, -1);
+          resolve(dData);
+          socket.close();
+        }
       },
       open(socket) {
         console.log("open");
@@ -73,13 +94,12 @@ async function sendTcp(service: Service) {
         console.log("end");
       }, // connection closed by server
       timeout(socket) {
-        console.log("timeout");
         reject(new Error("timeout"));
       }, // connection timed out
     },
   });
 
-  socket.timeout(8_000);
+  socket.timeout(8);
 
   return promise;
 }
