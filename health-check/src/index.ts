@@ -13,24 +13,32 @@ const configs: readonly Config[] = services.map((x) => ({
 async function func() {
   for (const config of configs) {
     await sleep(1_000);
-    let result: unknown = "unknown";
 
     try {
+      let result = "unknown";
       if (config.type === "tcp") {
         result = await sendTcp(config.url);
       } else if (config.type === "http") {
         result = await sendHttp(config.url);
       }
-      config.lastDate = Date.now();
-    } catch (error) {
-      result = error;
-    }
 
-    console.log(new Date().toLocaleString(), config.name, result);
+      config.lastDate = Date.now();
+      console.log(new Date().toLocaleString("zh"), config.name, result);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(
+          new Date().toLocaleString("zh"),
+          config.name,
+          error.message
+        );
+      } else {
+        console.error(new Date().toLocaleString("zh"), config.name, error);
+      }
+    }
   }
 
-  console.log("----------------------------------");
-  setTimeout(func, 15000);
+  console.log("--------------------------------------------");
+  setTimeout(func, 15_000);
 }
 
 async function func2() {
@@ -46,8 +54,10 @@ async function func2() {
       return `- ${x.name} 不可用 (${minutes} 分钟)`;
     })
     .join("\n");
-  const msg = `## 服务异常通知!\n${str}`;
-  console.log(msg);
+
+  const time = new Date().toLocaleTimeString("zh");
+  const msg = `## ${time} 服务异常通知!\n${str}`;
+  console.error(msg);
 }
 
 async function main() {

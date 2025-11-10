@@ -2,7 +2,14 @@ import { connect } from "bun";
 import { decodeString } from "./utils";
 
 export async function sendHttp(url: string) {
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    signal: AbortSignal.timeout(8_000),
+  });
+
+  if (!res.ok) {
+    throw new Error("status code not success");
+  }
+
   const text = await res.text();
   return text;
 }
@@ -97,7 +104,13 @@ export async function sendDingMsg(msg: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(content),
+    signal: AbortSignal.timeout(8_000),
   });
+
+  if (!res.ok) {
+    throw new Error("status code not success");
+  }
+
   const result = res.text();
   console.log(result);
 }
