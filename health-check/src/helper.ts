@@ -1,35 +1,17 @@
-import { connect, sleep } from "bun";
-import services from "./services.json";
+import { connect } from "bun";
+import { decodeString } from "./utils";
 
-type Service = {
-  type: string;
-  name: string;
-  address: string;
-};
-
-main();
-
-async function main() {
-  for (const element of services) {
-    try {
-      if (element.type === "tcp") {
-        const result = await sendTcp(element);
-        console.log(result.toString());
-      } else if (element.type === "http") {
-        await sendHttp(element);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-    await sleep(3_000);
-  }
-}
-
-async function sendHttp(service: Service) {
-  const res = await fetch(service.address);
+export async function sendHttp(url: string) {
+  const res = await fetch(url);
   const text = await res.text();
-  console.log(service.name, ":", text);
+  return text;
 }
+
+type UserData = {
+  length: number;
+  receivedBytes: number;
+  buffers: Buffer[];
+};
 
 const buf1 = Uint8Array.fromBase64(
   "Lk5FVAEAAAAAAHMAAAAEAAEBKQAAAHRjcDovL2hpcy5uamJzYmRmLmNvbTo5MDg5L0lIZWFsdGhTZXJ2aWNlBgABARgAAABhcHBsaWNhdGlvbi9vY3RldC1zdHJlYW0AAA=="
@@ -38,16 +20,10 @@ const buf2 = Uint8Array.fromBase64(
   "AAAAAAAAAAAAAQAAAAAAAAAVEQAAABIEUGluZxJUSElTQXBpLklIZWFsdGhTZXJ2aWNlLCBISVNBcGksIFZlcnNpb249MS4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1udWxsCw=="
 );
 
-async function sendTcp(service: Service) {
-  const [host, port] = service.address.split(":");
+export async function sendTcp(url: string) {
+  const [host, port] = url.split(":");
 
-  const { promise, resolve, reject } = Promise.withResolvers<Buffer>();
-
-  type UserData = {
-    length: number;
-    receivedBytes: number;
-    buffers: Buffer[];
-  };
+  const { promise, resolve, reject } = Promise.withResolvers<string>();
 
   const socket = await connect<UserData>({
     hostname: host!,
@@ -56,7 +32,7 @@ async function sendTcp(service: Service) {
 
     socket: {
       data(socket, data) {
-        console.log("data");
+        // console.log("data");
 
         const udata = socket.data;
         udata.receivedBytes += data.length;
@@ -68,19 +44,18 @@ async function sendTcp(service: Service) {
 
         if (udata.receivedBytes >= 16 && udata.receivedBytes >= udata.length) {
           const newBuf = Buffer.concat(udata.buffers);
-          const dLen = newBuf.readInt8(0x27);
-          const dData = newBuf.subarray(0x28, -1);
-          resolve(dData);
+          const str = decodeString(newBuf, 0x27);
+          resolve(str);
           socket.close();
         }
       },
       open(socket) {
-        console.log("open");
+        // console.log("open");
         socket.write(buf1);
         socket.write(buf2);
       },
       close(socket, error) {
-        console.log("close");
+        // console.log("close");
       },
       drain(socket) {},
       error(socket, error) {
@@ -102,4 +77,27 @@ async function sendTcp(service: Service) {
   socket.timeout(8);
 
   return promise;
+}
+
+export async function sendDingMsg(msg: string) {
+  const url =
+    "https://oapi.dingtalk.com/robot/send?access_token=a4703ae27e4d0ae87c7d36392929c1567bdff1f7ea94adfed1ca593421d7bb6a";
+
+  const content = {
+    msgtype: "markdown",
+    markdown: {
+      title: "服务异常通知",
+      text: msg,
+    },
+  };
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(content),
+  });
+  const result = res.text();
+  console.log(result);
 }
