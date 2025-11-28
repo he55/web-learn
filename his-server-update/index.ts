@@ -1,4 +1,4 @@
-import { $ } from 'bun'
+import { $, which } from 'bun'
 import fs from 'node:fs'
 import path from 'node:path'
 import config from './config.json' // with { type: 'json' }
@@ -70,6 +70,17 @@ async function update_cmd(subargs: string[]) {
   const [server, version] = subargs
 
   const binPath = path.resolve(`packages/${version}/${execName}`)
+  if (!fs.existsSync(binPath)) {
+    const zip = path.resolve(`packages/server-${version}.zip`)
+    if (fs.existsSync(zip)) {
+      if (!which('7z')) {
+        throw new Error('7z not found')
+      }
+      console.log(`7z x ${zip} -opackages`)
+      await $`7z x ${zip} -opackages`.quiet()
+    }
+  }
+
   if (!fs.existsSync(binPath)) {
     throw new Error('bin not exists')
   }
