@@ -1,6 +1,6 @@
 import { sleep } from "bun";
 import services from "../services.json";
-import { sendHttp, sendTcp } from "./helper";
+import { sendHttp, sendTcp2 } from "./helper";
 import type { Config } from "./types";
 
 const configs: readonly Config[] = services.map((x) => ({
@@ -17,7 +17,7 @@ async function func() {
     try {
       let result = "unknown";
       if (config.type === "tcp") {
-        result = await sendTcp(config.url);
+        result = await sendTcp2(config.url);
       } else if (config.type === "http") {
         result = await sendHttp(config.url);
       }

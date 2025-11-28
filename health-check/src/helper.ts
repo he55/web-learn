@@ -1,18 +1,6 @@
+import net from "node:net";
 import { connect } from "bun";
 import { decodeString } from "./utils";
-
-export async function sendHttp(url: string) {
-  const res = await fetch(url, {
-    signal: AbortSignal.timeout(8_000),
-  });
-
-  if (!res.ok) {
-    throw new Error("status code not success");
-  }
-
-  const text = await res.text();
-  return text;
-}
 
 type UserData = {
   length: number;
@@ -84,6 +72,63 @@ export async function sendTcp(url: string) {
   socket.timeout(8);
 
   return promise;
+}
+
+export function sendTcp2(url: string) {
+  const [host, port] = url.split(":");
+
+  const { promise, resolve, reject } = Promise.withResolvers<string>();
+  const udata: UserData = { length: 0, receivedBytes: 0, buffers: [] };
+
+  const socket = net.createConnection(
+    {
+      host: host,
+      port: Number(port),
+      timeout: 8_000,
+    },
+    () => {
+      socket.write(buf1);
+      socket.write(buf2);
+    }
+  );
+
+  socket.on("data", (data) => {
+    udata.receivedBytes += data.length;
+    udata.buffers.push(data);
+
+    if (!udata.length) {
+      udata.length = data.readInt16LE(0xa) + 16;
+    }
+
+    if (udata.receivedBytes >= 16 && udata.receivedBytes >= udata.length) {
+      const newBuf = Buffer.concat(udata.buffers);
+      const str = decodeString(newBuf, 0x27);
+      resolve(str);
+      socket.end();
+    }
+  });
+
+  socket.on("timeout", () => {
+    reject(new Error("timeout"));
+  });
+  socket.on("error", (err) => {
+    reject(err);
+  });
+
+  return promise;
+}
+
+export async function sendHttp(url: string) {
+  const res = await fetch(url, {
+    signal: AbortSignal.timeout(8_000),
+  });
+
+  if (!res.ok) {
+    throw new Error("status code not success");
+  }
+
+  const text = await res.text();
+  return text;
 }
 
 export async function sendDingMsg(msg: string) {
