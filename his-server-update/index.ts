@@ -1,11 +1,14 @@
 import { $, which } from 'bun'
 import fs from 'node:fs'
 import path from 'node:path'
-import config from './config.json' // with { type: 'json' }
+// import config from './config.json' // with { type: 'json' }
 
 type UxCommand = 'package' | 'update' | 'help'
 type WinswCommand = 'install' | 'uninstall' | 'start' | 'stop' | 'restart'
 type AppCommand = UxCommand | WinswCommand
+
+const bfile = Bun.file('config.json')
+const config = await bfile.json()
 
 const { prefix: serverPrefixName, exec: execName, exclude: excludeServerNames } = config
 
