@@ -83,4 +83,5 @@ const server = Bun.serve({
   },
 });
 
+console.log(`bun ${Bun.version}`)
 console.log(`Server running at ${server.url}`);
