@@ -7,7 +7,7 @@ type PropsType = {
 }
 
 export default function Settings({ onClose }: PropsType) {
-  const defaultValue = 'http://172.16.4.2:8081/1/asset.json'
+  const defaultValue = 'http://192.168.1.26:8081/1/asset.json'
   const [url, setUrl] = useState('')
 
   const loadSettings = async () => {

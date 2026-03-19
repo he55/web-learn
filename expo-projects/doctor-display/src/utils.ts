@@ -69,10 +69,15 @@ export const getData = async (url: string) => {
 
   const b = list.filter((x) => x.state === 0)
   if (b.length) {
-    data.text3 = b
-      .slice(0, 2)
-      .map((x) => `${x.number} ${x.name}`)
-      .join('    ')
+    const strs: string[] = []
+    for (let i = 0; i < b.length; i += 2) {
+      const str = b
+        .slice(i, i + 2)
+        .map((x) => `${x.number} ${x.name}`)
+        .join('  ')
+      strs.push(str)
+    }
+    data.text3 = strs.join('\n')
   }
 
   return data

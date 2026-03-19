@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Image, Modal, Platform, StyleSheet, Text, ToastAndroid, View } from 'react-native'
 import Settings from './Settings'
-import { useVideoPlayer, VideoView } from 'expo-video'
 import { getData, getConfig, loadConfig, type Config } from './utils'
 
 const bgImg = require('../assets/bg.jpg')
@@ -13,12 +12,6 @@ export default function Home() {
   const [label3Text, setLabel3Text] = useState('')
 
   const [bgImage, setBgImage] = useState(bgImg)
-
-  const player = useVideoPlayer('', (player) => {
-    player.loop = true
-    player.muted = true
-    player.play()
-  })
 
   const setup = async () => {
     try {
@@ -32,7 +25,6 @@ export default function Home() {
     }
   }
 
-  let videoSource = ''
   const updateUI = (config: Config) => {
     if (bgImage !== config.backgroundImageUrl) {
       setBgImage({ uri: config.backgroundImageUrl })
@@ -40,15 +32,6 @@ export default function Home() {
 
     if (label1Text !== config.name) {
       setLabel1Text(config.name)
-    }
-
-    if (player.muted !== config.videoMuted) {
-      player.muted = config.videoMuted
-    }
-
-    if (videoSource !== config.videoUrl) {
-      videoSource = config.videoUrl
-      player.replaceAsync(config.videoUrl)
     }
   }
 
@@ -58,18 +41,6 @@ export default function Home() {
     let config: Config
     let timeoutId: NodeJS.Timeout
     let timeoutId2: NodeJS.Timeout
-    let timeoutId3: NodeJS.Timeout
-
-    const playerWatchDog = async () => {
-      console.log(new Date(), 'playerWatchDog')
-
-      if (videoSource) {
-        player.replay()
-      }
-
-      timeoutId3 = setTimeout(playerWatchDog, 60_000 * 10)
-    }
-    timeoutId3 = setTimeout(playerWatchDog, 60_000 * 10)
 
     const getConfigTick = async () => {
       console.log(new Date(), 'getConfig')
@@ -106,7 +77,6 @@ export default function Home() {
     return () => {
       clearTimeout(timeoutId)
       clearTimeout(timeoutId2)
-      clearTimeout(timeoutId3)
     }
   }, [])
 
@@ -121,11 +91,11 @@ export default function Home() {
       </Modal>
       <View style={styles.container}>
         <Image style={styles.bg} source={bgImage} />
-        <VideoView style={styles.video} player={player}></VideoView>
 
-        <Text style={[styles.text, styles.label2]} onPress={() => setModalVisible(true)}>
-          {label2Text}
+        <Text style={[styles.text, styles.label1]} onPress={() => setModalVisible(true)}>
+          {label1Text}
         </Text>
+        <Text style={[styles.text, styles.label2]}>{label2Text}</Text>
         <Text style={[styles.text, styles.label3]}>{label3Text}</Text>
       </View>
     </>
@@ -142,31 +112,25 @@ const styles = StyleSheet.create({
     resizeMode: 'stretch',
   },
   text: {
-    width: 700,
-    height: 130,
+    width: 490,
+    height: 85,
     position: 'absolute',
-    left: 300,
+    left: 190,
     fontSize: 50,
     fontWeight: 'bold',
-    lineHeight: 130,
+    lineHeight: 85,
     textAlign: 'center',
     // backgroundColor: 'green',
   },
   label1: {
-    bottom: 840,
+    bottom: 538,
   },
   label2: {
-    bottom: 840,
-    fontSize: 70,
+    bottom: 415,
   },
   label3: {
-    bottom: 665,
-  },
-  video: {
-    position: 'absolute',
-    left: 70,
-    bottom: 75,
-    width: 940,
-    height: 530,
+    bottom: 66,
+    height: 308,
+    lineHeight: 75,
   },
 })

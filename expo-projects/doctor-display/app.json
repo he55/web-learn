@@ -36,7 +36,12 @@
           }
         }
       ],
-      "expo-video"
+      [
+        "expo-navigation-bar",
+        {
+          "visibility": "hidden"
+        }
+      ]
     ],
     "extra": {
       "eas": {
