@@ -47,9 +47,9 @@ export const getConfig = async () => {
 }
 
 export const getData = async (url: string) => {
-  const data = {
-    text2: '',
-    text3: '',
+  const data: { title: string; names: string[] } = {
+    title: '',
+    names: [],
   }
 
   const res = await fetch(url)
@@ -64,20 +64,12 @@ export const getData = async (url: string) => {
 
   const a = list.find((x) => x.state === 1)
   if (a) {
-    data.text2 = `${a.number} ${a.name}`
+    data.title = `${a.number} ${a.name}`
   }
 
   const b = list.filter((x) => x.state === 0)
   if (b.length) {
-    const strs: string[] = []
-    for (let i = 0; i < b.length; i += 2) {
-      const str = b
-        .slice(i, i + 2)
-        .map((x) => `${x.number} ${x.name}`)
-        .join('  ')
-      strs.push(str)
-    }
-    data.text3 = strs.join('\n')
+    data.names = b.map((x) => `${x.number} ${x.name}`)
   }
 
   return data

@@ -7,7 +7,7 @@ type PropsType = {
 }
 
 export default function Settings({ onClose }: PropsType) {
-  const defaultValue = 'http://192.168.1.26:8081/1/asset.json'
+  const defaultValue = 'http://192.168.4.230:8081/1/asset.json'
   const [url, setUrl] = useState('')
 
   const loadSettings = async () => {
@@ -40,9 +40,9 @@ export default function Settings({ onClose }: PropsType) {
           style={styles.input}
           onChangeText={setUrl}
           value={url}
-          autoFocus={true}
           placeholder="服务器地址"
         />
+        <TextInput autoFocus={true} />
         <View style={styles.buttonView}>
           <View style={{ marginRight: 'auto' }}>
             <Button title="Reset" onPress={reset} />

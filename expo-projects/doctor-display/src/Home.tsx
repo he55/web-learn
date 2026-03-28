@@ -7,9 +7,10 @@ const bgImg = require('../assets/bg.jpg')
 
 export default function Home() {
   const [modalVisible, setModalVisible] = useState(false)
+
   const [label1Text, setLabel1Text] = useState('')
   const [label2Text, setLabel2Text] = useState('')
-  const [label3Text, setLabel3Text] = useState('')
+  const [names, setNames] = useState<string[]>([])
 
   const [bgImage, setBgImage] = useState(bgImg)
 
@@ -62,13 +63,13 @@ export default function Home() {
       try {
         if (config) {
           const data = await getData(config.dataUrl)
-          setLabel2Text(data.text2)
-          setLabel3Text(data.text3)
+          setLabel2Text(data.title)
+          setNames(data.names)
         }
       } catch (error) {
         console.log(error)
         setLabel2Text('')
-        setLabel3Text('')
+        setNames([])
       }
       timeoutId = setTimeout(getDataTick, 5_000)
     }
@@ -92,11 +93,19 @@ export default function Home() {
       <View style={styles.container}>
         <Image style={styles.bg} source={bgImage} />
 
-        <Text style={[styles.text, styles.label1]} onPress={() => setModalVisible(true)}>
-          {label1Text}
+        <Text style={[styles.text, styles.label1]}>{label1Text}</Text>
+
+        <Text style={[styles.text, styles.label2]} onPress={() => setModalVisible(true)}>
+          {label2Text}
         </Text>
-        <Text style={[styles.text, styles.label2]}>{label2Text}</Text>
-        <Text style={[styles.text, styles.label3]}>{label3Text}</Text>
+
+        <View style={[styles.text, styles.nameView]}>
+          {names.map((name) => (
+            <Text key={name} style={styles.nameItem}>
+              {name}
+            </Text>
+          ))}
+        </View>
       </View>
     </>
   )
@@ -112,25 +121,44 @@ const styles = StyleSheet.create({
     resizeMode: 'stretch',
   },
   text: {
-    width: 490,
-    height: 85,
     position: 'absolute',
-    left: 190,
-    fontSize: 50,
-    fontWeight: 'bold',
-    lineHeight: 85,
     textAlign: 'center',
-    // backgroundColor: 'green',
+    // backgroundColor: '#00ff004f',
   },
   label1: {
-    bottom: 538,
+    left: 260,
+    bottom: 0,
+    width: 200,
+    height: 28,
+    fontSize: 15,
+    lineHeight: 28,
   },
   label2: {
-    bottom: 415,
+    color: '#00908e',
+    left: 155,
+    bottom: 578,
+    width: 520,
+    height: 78,
+    fontSize: 50,
+    fontWeight: 'bold',
+    lineHeight: 78,
   },
-  label3: {
-    bottom: 66,
-    height: 308,
-    lineHeight: 75,
+  nameView: {
+    position: 'absolute',
+    left: 156,
+    bottom: 348,
+    width: 520,
+    height: 200,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    overflow: 'hidden',
+  },
+  nameItem: {
+    width: '33%',
+    height: '25%',
+    fontSize: 30,
+    textAlign: 'center',
+    lineHeight: 50,
+    // borderWidth: 1,
   },
 })
