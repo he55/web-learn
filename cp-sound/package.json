@@ -8,5 +8,9 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "@types/mssql": "^9.1.11",
+    "mssql": "^12.2.1"
   }
 }
