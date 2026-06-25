@@ -41,8 +41,7 @@ async function main(args: string[]) {
 
     let envStr = "";
     for (const [key, value] of config) {
-      const v = (value as string).match(/=| /);
-      if (v) {
+      if (/=| /.test(value)) {
         envStr += `${key}="${value}"\n`;
       } else {
         envStr += `${key}=${value}\n`;
