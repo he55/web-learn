@@ -42,9 +42,9 @@ async function main(args: string[]) {
     let envStr = "";
     for (const [key, value] of config) {
       if (/=| /.test(value)) {
-        envStr += `${key}="${value}"\n`;
+        envStr += `${key}="${value}"\r\n`;
       } else {
-        envStr += `${key}=${value}\n`;
+        envStr += `${key}=${value}\r\n`;
       }
     }
 
