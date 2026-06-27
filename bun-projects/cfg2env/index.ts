@@ -21,35 +21,47 @@ async function main(args: string[]) {
     cwd: inputDir,
   });
 
+  if (filePaths.length === 0) {
+    console.log("no files found");
+    return;
+  }
+
+  console.log("start convert file...");
+
   for (const filePath of filePaths) {
     const fullPath = path.resolve(inputDir, filePath);
-    const bunfile = Bun.file(fullPath);
-    const xmlStr = await bunfile.text();
-
-    const parser = new XMLParser({ ignoreAttributes: false });
-    const obj = parser.parse(xmlStr)["configuration"];
-
-    const config = new Map();
-
-    (obj["connectionStrings"]["add"] as any[]).forEach((item) => {
-      config.set(item["@_name"], item["@_connectionString"]);
-    });
-
-    (obj["appSettings"]["add"] as any[]).forEach((item) => {
-      config.set(item["@_key"], item["@_value"]);
-    });
-
-    let envStr = "";
-    for (const [key, value] of config) {
-      if (/=| /.test(value)) {
-        envStr += `${key}="${value}"\r\n`;
-      } else {
-        envStr += `${key}=${value}\r\n`;
-      }
-    }
-
-    const envFilePath = path.resolve(path.dirname(fullPath), ".env");
-    await Bun.write(envFilePath, envStr);
-    console.log(envFilePath, "ok");
+    await convertEnvFile(fullPath);
   }
+
+  console.log("done.");
+}
+
+async function convertEnvFile(fullPath: string) {
+  const xmlStr = await Bun.file(fullPath).text();
+
+  const parser = new XMLParser({ ignoreAttributes: false });
+  const obj = parser.parse(xmlStr)["configuration"];
+
+  const config = new Map();
+
+  (obj["connectionStrings"]["add"] as any[]).forEach((item) => {
+    config.set(item["@_name"], item["@_connectionString"]);
+  });
+
+  (obj["appSettings"]["add"] as any[]).forEach((item) => {
+    config.set(item["@_key"], item["@_value"]);
+  });
+
+  let envStr = "";
+  for (const [key, value] of config) {
+    if (/=| /.test(value)) {
+      envStr += `${key}="${value}"\r\n`;
+    } else {
+      envStr += `${key}=${value}\r\n`;
+    }
+  }
+
+  const envFilePath = path.resolve(path.dirname(fullPath), ".env");
+  await Bun.write(envFilePath, envStr);
+  console.log(envFilePath, "ok");
 }
