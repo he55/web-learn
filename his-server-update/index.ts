@@ -1,18 +1,16 @@
 import { $, which } from 'bun'
 import fs from 'node:fs'
 import path from 'node:path'
-// import config from './config.json' // with { type: 'json' }
 
 type UxCommand = 'package' | 'update' | 'help'
 type WinswCommand = 'install' | 'uninstall' | 'start' | 'stop' | 'restart'
 type AppCommand = UxCommand | WinswCommand
 
-const bfile = Bun.file('config.json')
-const config = await bfile.json()
+const config = await Bun.file('config.json').json()
 
 const { prefix: serverPrefixName, exec: execName, exclude: excludeServerNames } = config
 
-main(process.argv.splice(2))
+main(process.argv.slice(2))
 
 function getServerFiles(serverName: string) {
   const pattern = serverName === 'all' ? '*' : serverName
@@ -94,7 +92,7 @@ async function update_cmd(subargs: string[]) {
     const oldConfig = fs.readFileSync(configPath, 'utf8')
     const newConfig = oldConfig.replace(
       /<executable>(.+)<\/executable>/i,
-      `<executable>${binPath}</executable>`
+      `<executable>${binPath}</executable>`,
     )
     fs.writeFileSync(configPath, newConfig)
 
