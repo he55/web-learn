@@ -15,7 +15,9 @@ main(process.argv.slice(2))
 function getServerFiles(serverName: string) {
   const pattern = serverName === 'all' ? '*' : serverName
 
-  let configFilePaths = fs.globSync(`${serverPrefixName}${pattern}/app.xml`)
+  const glob = new Bun.Glob(`${serverPrefixName}{${pattern}}/app.xml`)
+
+  let configFilePaths = Array.from(glob.scanSync())
   if (configFilePaths.length === 0) {
     throw new Error('not found server')
   }
