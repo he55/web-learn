@@ -5,8 +5,13 @@ import path from 'node:path'
 type UxCommand = 'package' | 'update' | 'help'
 type WinswCommand = 'install' | 'uninstall' | 'start' | 'stop' | 'restart'
 type AppCommand = UxCommand | WinswCommand
+type AppConfig = {
+  prefix: string
+  exec: string
+  exclude: string[]
+}
 
-const config = await Bun.file('config.json').json()
+const config: AppConfig = await Bun.file('config.json').json()
 
 const { prefix: serverPrefixName, exec: execName, exclude: excludeServerNames } = config
 
