@@ -54,9 +54,9 @@ function help() {
        ux restart <server>`)
 }
 
-function package_cmd(subargs: string[]) {
-  const [c] = subargs
-  if (c === 'list') {
+function package_cmd(args: string[]) {
+  const [p] = args
+  if (p === 'list') {
     const bins = fs.globSync('packages/*/')
     const vers = bins
       .map((x) => x.split(path.sep).at(1)!)
@@ -69,13 +69,13 @@ function package_cmd(subargs: string[]) {
   }
 }
 
-async function update_cmd(subargs: string[]) {
-  if (subargs.length < 2) {
+async function update_cmd(args: string[]) {
+  if (args.length < 2) {
     help()
     return
   }
 
-  const [server, version] = subargs
+  const [server, version] = args
 
   const binPath = path.resolve(`packages/${version}/${execName}`)
   if (!fs.existsSync(binPath)) {
@@ -108,8 +108,8 @@ async function update_cmd(subargs: string[]) {
   }
 }
 
-async function winsw_cmd(subargs: string[], cmd: WinswCommand) {
-  const [server] = subargs
+async function winsw_cmd(args: string[], cmd: WinswCommand) {
+  const [server] = args
   if (!server) {
     help()
     return
@@ -129,8 +129,8 @@ function main(args: string[]) {
     return
   }
 
-  const [subcmd, ...subargs] = args
-  switch (subcmd as AppCommand) {
+  const [cmd, ...subargs] = args
+  switch (cmd as AppCommand) {
     case 'package':
       package_cmd(subargs)
       break
@@ -145,7 +145,7 @@ function main(args: string[]) {
     case 'start':
     case 'stop':
     case 'restart':
-      winsw_cmd(subargs, subcmd as WinswCommand)
+      winsw_cmd(subargs, cmd as WinswCommand)
       break
     default:
       help()
