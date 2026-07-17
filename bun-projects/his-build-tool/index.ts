@@ -1,4 +1,4 @@
-import { $ } from 'bun'
+import { $, s3 } from 'bun'
 import fs from 'node:fs'
 import path from 'node:path'
 import { parseArgs } from 'node:util'
@@ -6,7 +6,11 @@ import { parseArgs } from 'node:util'
 type BuildType = 'client' | 'server' | 'all'
 
 function help() {
-  console.log('usage: bx build <client|server|all>')
+  console.log(`Usage: bx build [flags] <type>
+    type=client|server|all
+
+Flags:
+    --upload  upload packages to object storage`)
 }
 
 function cleanFile() {
@@ -37,14 +41,26 @@ function getServerVersion() {
   return version
 }
 
+async function uploadFile(filePath: string) {
+  console.log('upload', filePath, '...')
+
+  const bunfile = Bun.file(filePath)
+  const name = path.basename(filePath)
+  await s3.write(`uploads/${name}`, bunfile)
+}
+
 async function buildServer() {
   const version = getServerVersion()
 
   console.log(`build server ${version}...`)
-  const outputPath = path.resolve(version)
 
+  const outputPath = path.resolve(version)
   await $`msbuild ../Server/HISServer.csproj -p:Configuration=Release -p:OutputPath=${outputPath}`.quiet()
-  await $`7z a server-${version}.zip ${outputPath}`.quiet()
+
+  const outfile = `server-${version}.zip`
+  await $`7z a ${outfile} ${outputPath}`.quiet()
+
+  return outfile
 }
 
 async function buildClient() {
@@ -59,7 +75,10 @@ async function buildClient() {
   }
   fs.copyFileSync('../Tools/Launcher.exe', 'Client-Release/Launcher.exe')
 
-  await $`7z a Client-Release.zip Client-Release`.quiet()
+  const outfile = 'Client-Release.zip'
+  await $`7z a ${outfile} Client-Release`.quiet()
+
+  return outfile
 }
 
 async function build_cmd(args: string[]) {
@@ -86,17 +105,27 @@ async function build_cmd(args: string[]) {
 
   cleanFile()
 
+  const outfiles: string[] = []
+
   switch (t) {
     case 'client':
-      await buildClient()
+      outfiles.push(await buildClient())
       break
     case 'server':
-      await buildServer()
+      outfiles.push(await buildServer())
       break
     case 'all':
-      await buildServer()
-      await buildClient()
+      outfiles.push(await buildServer())
+      outfiles.push(await buildClient())
       break
+  }
+
+  if (options.upload) {
+    console.log('upload files...')
+
+    for (const outfile of outfiles) {
+      await uploadFile(outfile)
+    }
   }
 
   console.log('done.')
