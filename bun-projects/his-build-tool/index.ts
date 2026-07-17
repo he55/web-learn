@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { parseArgs } from 'node:util'
 
-type BuildType = 'client' | 'server' | 'all' | unknown
+type BuildType = 'client' | 'server' | 'all'
 
 function help() {
   console.log('usage: bx build <client|server|all>')
@@ -22,7 +22,7 @@ function cleanFile() {
 }
 
 function getServerVersion() {
-  const appConfigFilePath = path.resolve('Server/AppConfig.cs')
+  const appConfigFilePath = path.resolve('../Server/AppConfig.cs')
   if (!fs.existsSync(appConfigFilePath)) {
     throw new Error(`file not exists ${appConfigFilePath}`)
   }
