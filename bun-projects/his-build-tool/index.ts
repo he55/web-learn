@@ -5,6 +5,8 @@ import { parseArgs } from 'node:util'
 
 type BuildType = 'client' | 'server' | 'all'
 
+const OUTPUT_DIR = 'output'
+
 function help() {
   console.log(`Usage: bx build [flags] <type>
     type=client|server|all
@@ -13,16 +15,14 @@ Flags:
     --upload  upload packages to object storage`)
 }
 
-function cleanFile() {
+function cleanFile(dir: string) {
   console.log('clean...')
 
-  const output = 'output'
-  if (fs.existsSync(output)) {
-    fs.rmSync(output, { recursive: true, force: true })
+  if (fs.existsSync(dir)) {
+    fs.rmSync(dir, { recursive: true, force: true })
   }
 
-  fs.mkdirSync(output)
-  process.chdir(output)
+  fs.mkdirSync(dir)
 }
 
 function getServerVersion() {
@@ -103,7 +103,9 @@ async function build_cmd(args: string[]) {
       return
   }
 
-  cleanFile()
+  cleanFile(OUTPUT_DIR)
+
+  process.chdir(OUTPUT_DIR)
 
   const outfiles: string[] = []
 
