@@ -25,6 +25,17 @@ function cleanFile(dir: string) {
   fs.mkdirSync(dir)
 }
 
+async function getFileMd5(pathname: string) {
+  const hasher = new Bun.CryptoHasher('md5')
+  const stream = Bun.file(pathname).stream()
+
+  for await (const chunk of stream) {
+    hasher.update(chunk)
+  }
+
+  return hasher.digest('hex')
+}
+
 function getServerVersion() {
   const appConfigFilePath = path.resolve('../Server/AppConfig.cs')
   if (!fs.existsSync(appConfigFilePath)) {
@@ -41,11 +52,11 @@ function getServerVersion() {
   return version
 }
 
-async function uploadFile(filePath: string) {
-  console.log('upload', filePath, '...')
+async function uploadFile(pathname: string) {
+  console.log('upload', pathname, '...')
 
-  const bunfile = Bun.file(filePath)
-  const name = path.basename(filePath)
+  const bunfile = Bun.file(pathname)
+  const name = path.basename(pathname)
   await s3.write(`uploads/${name}`, bunfile)
 }
 
