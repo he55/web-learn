@@ -15,8 +15,6 @@ const config: AppConfig = await Bun.file('config.json').json()
 
 const { prefix: serverPrefixName, exec: execName, exclude: excludeServerNames } = config
 
-main(process.argv.slice(2))
-
 function getServerFiles(serverName: string) {
   const pattern = serverName === 'all' ? '*' : serverName
 
@@ -152,3 +150,5 @@ function main(args: string[]) {
       break
   }
 }
+
+main(process.argv.slice(2))
