@@ -1,4 +1,4 @@
-import { $, which } from 'bun'
+import { $, semver, which } from 'bun'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -60,7 +60,7 @@ function package_cmd(args: string[]) {
     const bins = fs.globSync('packages/*/')
     const vers = bins
       .map((x) => x.split(path.sep).at(1)!)
-      .sort((a, b) => b.localeCompare(a))
+      .sort(semver.order)
       .join('  ')
     console.log('packages:')
     console.log(vers)
