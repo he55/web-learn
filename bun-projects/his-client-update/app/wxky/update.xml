@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<UpdateModel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Required>false</Required>
+  <Version>4.43</Version>
+  <DownloadURL>http://njfs.njbsbdf.com:10011/wxky/Client-Release.zip</DownloadURL>
+  <Description>问题修复</Description>
+</UpdateModel>

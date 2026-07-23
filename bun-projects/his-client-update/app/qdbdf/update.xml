@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<UpdateModel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Required>false</Required>
+  <Version>4.43.2</Version>
+  <DownloadURL>http://njfs.njbsbdf.com:10011/qdbdf/Client-Release.zip</DownloadURL>
+  <Description>系统流程优化。</Description>
+</UpdateModel>
