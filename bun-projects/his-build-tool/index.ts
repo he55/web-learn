@@ -52,6 +52,22 @@ function getServerVersion() {
   return version
 }
 
+function getClientVersion() {
+  const appConfigFilePath = path.resolve('../Client/KerimHIS.Main/KerimHIS.Main.csproj')
+  if (!fs.existsSync(appConfigFilePath)) {
+    throw new Error(`file not exists ${appConfigFilePath}`)
+  }
+
+  const text = fs.readFileSync(appConfigFilePath, 'utf-8')
+  const result = text.match(/<Version>(?<version>.+)<\/Version>/)
+
+  const version = result?.groups?.['version']
+  if (!version) {
+    throw new Error('not match server version.')
+  }
+  return version
+}
+
 async function uploadFile(pathname: string) {
   console.log('upload', pathname, '...')
 
@@ -63,7 +79,7 @@ async function uploadFile(pathname: string) {
 async function buildServer() {
   const version = getServerVersion()
 
-  console.log(`build server ${version}...`)
+  console.log(`build server ${version} ...`)
 
   const outputPath = path.resolve(version)
   await $`msbuild ../Server/HISServer.csproj -p:Configuration=Release -p:OutputPath=${outputPath}`.quiet()
@@ -75,7 +91,9 @@ async function buildServer() {
 }
 
 async function buildClient() {
-  console.log('build client...')
+  const version = getClientVersion()
+
+  console.log(`build client ${version} ...`)
 
   const outputPath = path.resolve('Client-Release/bin')
   await $`msbuild ../Client/KerimHIS.Main/KerimHIS.Main.csproj -p:Configuration=Release -p:OutputPath=${outputPath}`.quiet()
@@ -86,7 +104,7 @@ async function buildClient() {
   }
   fs.copyFileSync('../Tools/Launcher.exe', 'Client-Release/Launcher.exe')
 
-  const outfile = 'Client-Release.zip'
+  const outfile = `client-${version}.zip`
   await $`7z a ${outfile} Client-Release`.quiet()
 
   return outfile
