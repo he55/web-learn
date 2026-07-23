@@ -1,4 +1,4 @@
-import { env, semver } from 'bun'
+import { env, s3, semver } from 'bun'
 import fs from 'node:fs'
 
 type AppCommand = 'package' | 'update' | 'help'
@@ -51,6 +51,17 @@ async function update_cmd(args: string[]) {
   const [org, version] = args
 
   const packageFilePath = `packages/client-${version}.zip`
+
+  if (true) {
+    if (!fs.existsSync(packageFilePath)) {
+      const name = `uploads/client-${version}.zip`
+      if (await s3.exists(name)) {
+        const s3file = s3.file(name)
+        await Bun.write(packageFilePath, s3file)
+      }
+    }
+  }
+
   if (!fs.existsSync(packageFilePath)) {
     throw new Error('package not exists')
   }
