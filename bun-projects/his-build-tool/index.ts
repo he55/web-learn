@@ -63,7 +63,7 @@ function getClientVersion() {
 
   const version = result?.groups?.['version']
   if (!version) {
-    throw new Error('not match server version.')
+    throw new Error('not match client version.')
   }
   return version
 }
@@ -71,9 +71,14 @@ function getClientVersion() {
 async function uploadFile(pathname: string) {
   console.log('upload', pathname, '...')
 
+  const filePath = 'uploads/' + path.basename(pathname)
+
+  if (await s3.exists(filePath)) {
+    throw new Error(`file is exists ${filePath}`)
+  }
+
   const bunfile = Bun.file(pathname)
-  const name = path.basename(pathname)
-  await s3.write(`uploads/${name}`, bunfile)
+  await s3.write(filePath, bunfile)
 }
 
 async function buildServer() {
