@@ -96,6 +96,8 @@ async function update_cmd(args: string[]) {
     if (!fs.existsSync(zip) && options.download) {
       const name = `uploads/server-${version}.zip`
       if (await s3.exists(name)) {
+        console.log('download', name)
+
         const buffer = await s3.file(name).arrayBuffer()
         await Bun.write(zip, buffer)
       }
