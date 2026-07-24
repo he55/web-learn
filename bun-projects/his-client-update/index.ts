@@ -11,8 +11,10 @@ declare module 'bun' {
 }
 
 function help() {
-  console.log(`usage: cx package list
-       cx update <org> <version>`)
+  console.log(`Usage: cx package list
+       cx update [flags] <org> <version>
+Flags:
+  -d, --download  download package from remote`)
 }
 
 function package_cmd(args: string[]) {
