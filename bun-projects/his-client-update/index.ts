@@ -11,10 +11,10 @@ declare module 'bun' {
 }
 
 function help() {
-  console.log(`Usage: cx package list
+  console.log(`usage: cx package list
        cx update [flags] <org> <version>
-Flags:
-  -d, --download  download package from remote`)
+flags:
+       -d, --download  download package from remote`)
 }
 
 function package_cmd(args: string[]) {
@@ -72,8 +72,7 @@ async function update_cmd(args: string[]) {
       if (await s3.exists(name)) {
         console.log('download', name)
 
-        const s3file = s3.file(name)
-        const buffer = await s3file.arrayBuffer()
+        const buffer = await s3.file(name).arrayBuffer()
         await Bun.write(packageFilePath, buffer)
       }
     }
