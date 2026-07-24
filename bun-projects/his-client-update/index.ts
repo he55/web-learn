@@ -1,5 +1,6 @@
 import { env, s3, semver } from 'bun'
 import fs from 'node:fs'
+import { parseArgs } from 'node:util'
 
 type AppCommand = 'package' | 'update' | 'help'
 
@@ -43,21 +44,35 @@ function getConfigFilePaths(org: string) {
 }
 
 async function update_cmd(args: string[]) {
-  if (args.length < 2) {
+  const { values: options, positionals } = parseArgs({
+    args: args,
+    options: {
+      download: {
+        type: 'boolean',
+        short: 'd',
+      },
+    },
+    allowPositionals: true,
+  })
+
+  if (positionals.length < 2) {
     help()
     return
   }
 
-  const [org, version] = args
+  const [org, version] = positionals
 
   const packageFilePath = `packages/client-${version}.zip`
 
-  if (true) {
+  if (options.download) {
     if (!fs.existsSync(packageFilePath)) {
       const name = `uploads/client-${version}.zip`
       if (await s3.exists(name)) {
+        console.log('download', name)
+
         const s3file = s3.file(name)
-        await Bun.write(packageFilePath, s3file)
+        const buffer = await s3file.arrayBuffer()
+        await Bun.write(packageFilePath, buffer)
       }
     }
   }
