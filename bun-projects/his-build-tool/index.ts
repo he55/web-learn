@@ -9,10 +9,9 @@ const OUTPUT_DIR = 'output'
 
 function help() {
   console.log(`Usage: bx build [flags] <type>
-    type=client|server|all
-
+  type  client|server|all
 Flags:
-    -u, --upload  upload packages to object storage`)
+  -u, --upload  upload packages to remote`)
 }
 
 function cleanFile(dir: string) {
