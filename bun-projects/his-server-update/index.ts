@@ -1,6 +1,7 @@
-import { $, semver, which } from 'bun'
+import { $, s3, semver, which } from 'bun'
 import fs from 'node:fs'
 import path from 'node:path'
+import { parseArgs } from 'node:util'
 
 type UxCommand = 'package' | 'update' | 'help'
 type WinswCommand = 'install' | 'uninstall' | 'start' | 'stop' | 'restart'
@@ -44,12 +45,14 @@ function getServerFiles(serverName: string) {
 
 function help() {
   console.log(`usage: ux package list
-       ux update <server> <version>
+       ux update [flags] <server> <version>
        ux install <server>
        ux uninstall <server>
        ux start <server>
        ux stop <server>
-       ux restart <server>`)
+       ux restart <server>
+flags:
+       -d, --download  download package from remote`)
 }
 
 function package_cmd(args: string[]) {
@@ -68,16 +71,36 @@ function package_cmd(args: string[]) {
 }
 
 async function update_cmd(args: string[]) {
-  if (args.length < 2) {
+  const { values: options, positionals } = parseArgs({
+    args: args,
+    options: {
+      download: {
+        type: 'boolean',
+        short: 'd',
+      },
+    },
+    allowPositionals: true,
+  })
+
+  if (positionals.length < 2) {
     help()
     return
   }
 
-  const [server, version] = args
+  const [server, version] = positionals
 
   const binPath = path.resolve(`packages/${version}/${execName}`)
   if (!fs.existsSync(binPath)) {
     const zip = path.resolve(`packages/server-${version}.zip`)
+
+    if (!fs.existsSync(zip) && options.download) {
+      const name = `uploads/server-${version}.zip`
+      if (await s3.exists(name)) {
+        const buffer = await s3.file(name).arrayBuffer()
+        await Bun.write(zip, buffer)
+      }
+    }
+
     if (fs.existsSync(zip)) {
       if (!which('7z')) {
         throw new Error('7z not found')
