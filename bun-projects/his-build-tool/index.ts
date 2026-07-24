@@ -12,7 +12,7 @@ function help() {
     type=client|server|all
 
 Flags:
-    --upload  upload packages to object storage`)
+    -u, --upload  upload packages to object storage`)
 }
 
 function cleanFile(dir: string) {
@@ -121,6 +121,7 @@ async function build_cmd(args: string[]) {
     options: {
       upload: {
         type: 'boolean',
+        short: 'u',
       },
     },
     allowPositionals: true,
