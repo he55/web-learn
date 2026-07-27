@@ -1,4 +1,4 @@
-import { $, s3, semver, which } from 'bun'
+import { $, inspect, s3, semver, which } from 'bun'
 import fs from 'node:fs'
 import path from 'node:path'
 import { parseArgs } from 'node:util'
@@ -11,6 +11,8 @@ type AppConfig = {
   exec: string
   exclude: string[]
 }
+
+const SERVER_PKG_PREFIX = 'uploads/server-'
 
 const config: AppConfig = await Bun.file('config.json').json()
 
@@ -55,16 +57,33 @@ flags:
        -d, --download  download package from remote`)
 }
 
-function package_cmd(args: string[]) {
+async function package_cmd(args: string[]) {
   const [p] = args
-  if (p === 'list') {
-    const bins = fs.globSync('packages/*/')
-    const vers = bins
+
+  if (p === 'local') {
+    const packages = fs.globSync('packages/*/')
+
+    if (packages.length === 0) {
+      console.log('no packages on local')
+      return
+    }
+
+    const data = packages
       .map((x) => x.split(path.sep).at(1)!)
       .sort(semver.order)
       .join('  ')
-    console.log('packages:')
-    console.log(vers)
+
+    console.log(data)
+  } else if (p === 'remote') {
+    const uploads = await s3.list({ prefix: SERVER_PKG_PREFIX })
+
+    if (!uploads.contents) {
+      console.log('no packages on remote')
+      return
+    }
+
+    const data = uploads.contents.map((x) => ({ date: x.lastModified, name: x.key, size: x.size }))
+    console.log(inspect.table(data))
   } else {
     help()
   }
@@ -94,19 +113,23 @@ async function update_cmd(args: string[]) {
     const zip = path.resolve(`packages/server-${version}.zip`)
 
     if (!fs.existsSync(zip) && options.download) {
-      const name = `uploads/server-${version}.zip`
-      if (await s3.exists(name)) {
-        console.log('download', name)
+      const name = `${SERVER_PKG_PREFIX}${version}.zip`
 
-        const buffer = await s3.file(name).arrayBuffer()
-        await Bun.write(zip, buffer)
+      if (!(await s3.exists(name))) {
+        throw new Error(`not find '${name}' on remote`)
       }
+
+      console.log('download package', name)
+
+      const buffer = await s3.file(name).arrayBuffer()
+      await Bun.write(zip, buffer)
     }
 
     if (fs.existsSync(zip)) {
       if (!which('7z')) {
         throw new Error('7z not found')
       }
+
       console.log(`7z x ${zip} -opackages`)
       await $`7z x ${zip} -opackages`.quiet()
     }
@@ -121,9 +144,10 @@ async function update_cmd(args: string[]) {
   for (const configPath of configFilePaths) {
     const oldConfig = fs.readFileSync(configPath, 'utf8')
     const newConfig = oldConfig.replace(
-      /<executable>(.+)<\/executable>/i,
+      /<executable>(.+)<\/executable>/,
       `<executable>${binPath}</executable>`,
     )
+
     fs.writeFileSync(configPath, newConfig)
 
     console.log(`winsw restart ${configPath}`)
@@ -146,7 +170,7 @@ async function winsw_cmd(args: string[], cmd: WinswCommand) {
   }
 }
 
-function main(args: string[]) {
+async function main(args: string[]) {
   if (args.length === 0) {
     help()
     return
@@ -155,10 +179,10 @@ function main(args: string[]) {
   const [cmd, ...subargs] = args
   switch (cmd as AppCommand) {
     case 'package':
-      package_cmd(subargs)
+      await package_cmd(subargs)
       break
     case 'update':
-      update_cmd(subargs)
+      await update_cmd(subargs)
       break
     case 'help':
       help()
@@ -168,7 +192,7 @@ function main(args: string[]) {
     case 'start':
     case 'stop':
     case 'restart':
-      winsw_cmd(subargs, cmd as WinswCommand)
+      await winsw_cmd(subargs, cmd as WinswCommand)
       break
     default:
       help()
