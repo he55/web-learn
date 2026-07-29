@@ -1,4 +1,4 @@
-import { env, s3, semver } from 'bun'
+import { env, inspect, s3, semver } from 'bun'
 import fs from 'node:fs'
 import { parseArgs } from 'node:util'
 
@@ -10,6 +10,8 @@ declare module 'bun' {
   }
 }
 
+const CLIENT_PKG_PREFIX = 'uploads/client-'
+
 function help() {
   console.log(`usage: cx package list
        cx update [flags] <org> <version>
@@ -17,16 +19,32 @@ flags:
        -d, --download  download package from remote`)
 }
 
-function package_cmd(args: string[]) {
+async function package_cmd(args: string[]) {
   const [p] = args
-  if (p === 'list') {
-    const fileNames = fs.globSync('client-*.zip', { cwd: 'packages' })
-    const vers = fileNames
+  if (p === 'local') {
+    const packages = fs.globSync('client-*.zip', { cwd: 'packages' })
+
+    if (packages.length === 0) {
+      console.log('no package on local')
+      return
+    }
+
+    const data = packages
       .map((x) => x.slice(7, -4))
       .sort(semver.order)
       .join('  ')
-    console.log('packages:')
-    console.log(vers)
+
+    console.log(data)
+  } else if (p === 'remote') {
+    const uploads = await s3.list({ prefix: CLIENT_PKG_PREFIX })
+
+    if (!uploads.contents) {
+      console.log('no packages on remote')
+      return
+    }
+
+    const data = uploads.contents.map((x) => ({ date: x.lastModified, name: x.key, size: x.size }))
+    console.log(inspect.table(data))
   } else {
     help()
   }
@@ -53,6 +71,9 @@ async function update_cmd(args: string[]) {
         type: 'boolean',
         short: 'd',
       },
+      uses3: {
+        type: 'boolean',
+      },
     },
     allowPositionals: true,
   })
@@ -65,24 +86,30 @@ async function update_cmd(args: string[]) {
   const [org, version] = positionals
 
   const packageFilePath = `packages/client-${version}.zip`
+  const name = `${CLIENT_PKG_PREFIX}${version}.zip`
+  let downloadUrl = `${env.DOWNLOAD_BASE_URL}${packageFilePath}`
 
   if (options.download) {
-    if (!fs.existsSync(packageFilePath)) {
-      const name = `uploads/client-${version}.zip`
-      if (await s3.exists(name)) {
-        console.log('download', name)
+    if (!(await s3.exists(name))) {
+      throw new Error('package not exist on remote')
+    }
 
-        const buffer = await s3.file(name).arrayBuffer()
-        await Bun.write(packageFilePath, buffer)
-      }
+    console.log('download', name)
+
+    const buffer = await s3.file(name).arrayBuffer()
+    await Bun.write(packageFilePath, buffer)
+  } else if (options.uses3) {
+    if (!(await s3.exists(name))) {
+      throw new Error('package not exist on remote')
+    }
+
+    const url = s3.presign(name, { expiresIn: 7 * 24 * 3600 })
+    downloadUrl = url.replaceAll('&', '&amp;')
+  } else {
+    if (!fs.existsSync(packageFilePath)) {
+      throw new Error('package not exists')
     }
   }
-
-  if (!fs.existsSync(packageFilePath)) {
-    throw new Error('package not exists')
-  }
-
-  const downloadUrl = `${env.DOWNLOAD_BASE_URL}${packageFilePath}`
 
   const configFilePaths = getConfigFilePaths(org!)
 
@@ -98,7 +125,7 @@ async function update_cmd(args: string[]) {
   }
 }
 
-function main(args: string[]) {
+async function main(args: string[]) {
   if (args.length === 0) {
     help()
     return
@@ -107,10 +134,10 @@ function main(args: string[]) {
   const [cmd, ...subargs] = args
   switch (cmd as AppCommand) {
     case 'package':
-      package_cmd(subargs)
+      await package_cmd(subargs)
       break
     case 'update':
-      update_cmd(subargs)
+      await update_cmd(subargs)
       break
     default:
       help()
