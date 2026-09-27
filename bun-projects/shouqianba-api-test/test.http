@@ -1,0 +1,53 @@
+@baseUrl = http://localhost:3001
+# @baseUrl = http://his.njbsbdf.com:10011/api/v2/payment2
+
+POST {{baseUrl}}/shouqianba-pay/request HTTP/1.1
+Content-Type: application/json
+
+{
+  "payMerTranNo": "test_njfs_239393900846534",
+  "totalAmount": "0.01"
+}
+
+###
+
+GET {{baseUrl}}/shouqianba-pay/check?payMerTranNo=test_njfs_239393900845 HTTP/1.1
+
+###
+
+POST {{baseUrl}}/shouqianba-pay/msg-notify HTTP/1.1
+Content-Type: application/json
+
+{
+    "sn": "7895084146809509",
+    "tsn": "7895084146809509",
+    "type": "PAYMENT",
+    "client_sn": "test_njfs_2393939015",
+    "client_tsn": "test_njfs_2393939015",
+    "ctime": "1790420986263",
+    "status": "SUCCESS",
+    "payway": "3",
+    "payway_name": "微信",
+    "sub_payway": "3",
+    "order_status": "PAID",
+    "payer_login": "oVxsc1YuCvnVHLopXMVkiTjeZDsM",
+    "payer_uid": "oGFfks4Ccpgf8RMCaRM85Mm3up6Q",
+    "trade_no": "4500000447202609263675342603",
+    "channel_trade_no": "4500000447202609263675342603",
+    "total_amount": "2",
+    "net_amount": "2",
+    "settlement_amount": "2",
+    "finish_time": "1790420991565",
+    "channel_finish_time": "1790420990000",
+    "subject": "医院收费",
+    "store_id": "d55a5f4c-4ec3-460c-a68e-4af8a17673ae",
+    "terminal_id": "13873d64-9783-4317-b9f8-d474a4d96874",
+    "operator": "admin",
+    "payment_list": [
+        {
+            "type": "WALLET_WEIXIN",
+            "amount_total": "2",
+            "amount": "2"
+        }
+    ]
+}

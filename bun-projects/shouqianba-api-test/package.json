@@ -1,0 +1,19 @@
+{
+  "name": "shouqianba-api-test",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "publish": "bun build --compile --outfile=webapp index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "amqp-connection-manager": "^5.0.0",
+    "amqplib": "^2.0.1"
+  }
+}
